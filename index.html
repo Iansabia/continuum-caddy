@@ -106,8 +106,16 @@
   .cap-line{margin-top:1.15rem;text-align:center;font-size:.82rem;color:var(--muted);max-width:30ch;margin-inline:auto;}
   .cap-line b{color:var(--fg);font-weight:600;}
 
-  .screen.caddy{background:#07070d;}
-  .anim3d{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:#07070d;z-index:1;}
+  /* how-it-works: clean step-by-step pipeline */
+  .pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,2vw,20px);margin-top:2.6rem;}
+  @media (max-width:900px){.pipeline{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:540px){.pipeline{grid-template-columns:1fr;}}
+  .stage{position:relative;border:1px solid var(--line);border-radius:14px;padding:24px 22px;background:var(--surface);}
+  .stage .sn{font:700 .68rem/1 system-ui;letter-spacing:.16em;color:var(--accent);}
+  .stage .ic{display:block;width:38px;height:38px;margin:16px 0 14px;color:var(--accent);}
+  .stage h3{font-size:1.1rem;letter-spacing:-.01em;margin-bottom:6px;}
+  .stage p{font-size:.92rem;color:var(--muted);line-height:1.5;}
+  @media (min-width:901px){.stage:not(:last-child)::after{content:"";position:absolute;top:44px;right:-13px;width:9px;height:9px;border-top:2px solid var(--line-strong);border-right:2px solid var(--line-strong);transform:rotate(45deg);}}
 
   section{padding-block:var(--pad);border-top:1px solid var(--line);}
   .section-head{max-width:40ch;} .section-head h2{margin-top:.6rem;} .section-head p{margin-top:1rem;}
@@ -224,31 +232,30 @@
       <p class="eyebrow" data-reveal>How it works</p>
       <h2 id="how-h" class="display-l" data-reveal style="--i:1">From a mounted phone to a caddy on every hole.</h2>
     </div>
-    <div class="how-grid">
-      <div data-reveal>
-        <div class="device-wrap">
-          <div class="device">
-            <span class="k left action" aria-hidden="true"></span>
-            <span class="k left volup" aria-hidden="true"></span>
-            <span class="k left voldn" aria-hidden="true"></span>
-            <span class="k right power" aria-hidden="true"></span>
-            <span class="k right cam" aria-hidden="true"></span>
-            <div class="bezel">
-              <div class="screen caddy">
-                <canvas id="c3d" class="anim3d" aria-label="Animated pipeline: capture the swing, collect the ball frame by frame, estimate the shot, then caddy advice with a landing zone."></canvas>
-                <div class="island" aria-hidden="true"></div>
-                <div class="glare" aria-hidden="true"></div>
-              </div>
-            </div>
-          </div>
-          <p class="cap-line">The pipeline, step by step: capture the swing, collect the ball frame by frame, estimate the shot, then your club and a landing zone. Illustrative.</p>
-        </div>
+    <div class="pipeline">
+      <div class="stage" data-reveal style="--i:0">
+        <span class="sn">STEP 01</span>
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><circle cx="12" cy="12" r="2.6"/></svg>
+        <h3>Capture the swing</h3>
+        <p>Mount your phone on the cart or a stand and take your normal swing. Nothing on the club, nothing to calibrate.</p>
       </div>
-      <div class="steplist">
-        <div class="step" data-reveal style="--i:1"><div class="n">1</div><div><h3>Mount and hit</h3><p>Clip your phone to the cart or a stand, on the range or the course, and take your normal swing. Nothing on the club, nothing to calibrate.</p></div></div>
-        <div class="step" data-reveal style="--i:2"><div class="n">2</div><div><h3>Vision reads the shot</h3><p>Computer vision tracks your body and the ball frame by frame, catching the strike and the ball leaving the face.</p></div></div>
-        <div class="step" data-reveal style="--i:3"><div class="n">3</div><div><h3>Estimate the outcome</h3><p>From the ball in those frames we estimate carry, ball speed, and launch, the way a launch monitor reports it.</p></div></div>
-        <div class="step" data-reveal style="--i:4"><div class="n">4</div><div><h3>Caddy on the course</h3><p>Your read becomes advice: the club for the shot, the smart miss, and a ring on the map to help you find your ball.</p></div></div>
+      <div class="stage" data-reveal style="--i:1">
+        <span class="sn">STEP 02</span>
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 20 4" stroke-dasharray="1.4 3.2"/><circle cx="6.5" cy="17.5" r="1"/><circle cx="11" cy="13" r="1"/><circle cx="15.5" cy="8.5" r="1"/><circle cx="19" cy="5" r="2.4" fill="currentColor" stroke="none"/></svg>
+        <h3>Collect the ball</h3>
+        <p>Computer vision tracks your body and the ball frame by frame, catching the strike and the ball leaving the face.</p>
+      </div>
+      <div class="stage" data-reveal style="--i:2">
+        <span class="sn">STEP 03</span>
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20c3-11 9.5-15 18-13"/><path d="M15 5.5 21 7l-1.4 5.8"/></svg>
+        <h3>Estimate the shot</h3>
+        <p>From the ball in those frames we estimate carry, ball speed, and launch, the way a launch monitor reports it.</p>
+      </div>
+      <div class="stage" data-reveal style="--i:3">
+        <span class="sn">STEP 04</span>
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21V4"/><path d="M7 4.5h9l-2.4 3 2.4 3H7"/><ellipse cx="12" cy="20.4" rx="6" ry="1.6"/></svg>
+        <h3>Caddy on the course</h3>
+        <p>Your read becomes advice: the club for the shot, the smart miss, and a landing zone to help you find your ball.</p>
       </div>
     </div>
   </section>
@@ -301,89 +308,5 @@
     else{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{rootMargin:'0px 0px -8% 0px',threshold:.12});
       items.forEach(function(el){io.observe(el);});}
   })();
-</script>
-
-<script>
-// ===== how-it-works pipeline animation (native canvas) =====
-(function(){
-const ARC=[[0.0007,0.0011],[0.0397,0.07],[0.0768,0.1389],[0.1122,0.2073],[0.146,0.2745],[0.1784,0.3402],[0.2094,0.4039],[0.2391,0.4653],[0.2677,0.5242],[0.2952,0.5802],[0.3222,0.6341],[0.3479,0.684],[0.3727,0.7305],[0.3968,0.7735],[0.4201,0.813],[0.4428,0.8489],[0.4649,0.8811],[0.4865,0.9095],[0.5075,0.9341],[0.5284,0.9552],[0.5485,0.972],[0.5682,0.9849],[0.5875,0.9939],[0.6065,0.9989],[0.6251,1.0],[0.6435,0.9972],[0.6615,0.9904],[0.6793,0.9797],[0.6968,0.9651],[0.7144,0.9463],[0.7315,0.9239],[0.7484,0.8977],[0.7651,0.8677],[0.7816,0.8339],[0.7979,0.7965],[0.8141,0.7555],[0.8301,0.7108],[0.846,0.6626],[0.8621,0.6101],[0.8777,0.555],[0.8933,0.4966],[0.9087,0.4349],[0.9241,0.37],[0.9394,0.3021],[0.9545,0.2311],[0.9697,0.1571],[0.9847,0.0803],[1.0,-0.0007]];
-const CARRY=156, BALLMPH=110, LAUNCH=17.5;
-const LW=390, LH=760;
-const cv=document.getElementById('c3d'); if(!cv) return; const ctx=cv.getContext('2d');
-function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);cv.width=LW*dpr;cv.height=LH*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
-resize();
-const BG0='#0a0d16',BG1='#10182b',AC='#8f74e0',ACD='#6d57c0',LAV='#cdbcf2',WARM='#ffe7bd',TX='#eef2f9',SUB='#7c88a2',GRID='rgba(255,255,255,.05)';
-const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t,ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t);},seg=(u,s,e)=>clamp((u-s)/(e-s),0,1);
-const GY=632,TEEX=66,LANDX=330,FH=452;
-function arcAt(f){const n=ARC.length-1,p=clamp(f,0,1)*n,i=Math.floor(p),t=p-i;const a=ARC[Math.min(i,n)],b=ARC[Math.min(i+1,n)];return {x:lerp(TEEX,LANDX,lerp(a[0],b[0],t)),y:GY-lerp(a[1],b[1],t)*FH};}
-function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-function glowStroke(col,blur,w,a){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor=col;ctx.shadowBlur=blur;ctx.globalAlpha=a;}
-function dot(x,y,r,col,blur,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=blur||0;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.restore();}
-function text(s,x,y,size,col,weight,spacing,align){ctx.save();ctx.fillStyle=col;ctx.textAlign=align||'left';ctx.textBaseline='alphabetic';ctx.font=(weight||600)+' '+size+'px ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif';if(spacing){let cx=x;const tot=s.split('').reduce((w,ch)=>w+ctx.measureText(ch).width+spacing,0)-spacing;if(align==='center')cx=x-tot/2;else if(align==='right')cx=x-tot;ctx.textAlign='left';for(const ch of s){ctx.fillText(ch,cx,y);cx+=ctx.measureText(ch).width+spacing;}}else ctx.fillText(s,x,y);ctx.restore();}
-function bg(){const g=ctx.createLinearGradient(0,0,0,LH);g.addColorStop(0,BG1);g.addColorStop(.55,BG0);g.addColorStop(1,'#070a11');ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
-  ctx.strokeStyle=GRID;ctx.lineWidth=1;for(let x=0;x<=LW;x+=26){ctx.beginPath();ctx.moveTo(x,80);ctx.lineTo(x,690);ctx.stroke();}for(let y=80;y<=690;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(LW,y);ctx.stroke();}
-  const v=ctx.createRadialGradient(LW/2,LH*0.5,120,LW/2,LH*0.5,LW*0.9);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');ctx.fillStyle=v;ctx.fillRect(0,0,LW,LH);}
-const STEPS=['CAPTURE','COLLECT','ESTIMATE','CADDY'];
-function stepRail(active,localProg){const y=40,x0=20,x1=LW-20,gap=8,w=(x1-x0-gap*3)/4;
-  for(let i=0;i<4;i++){const x=x0+i*(w+gap),done=i<active,on=i===active;ctx.save();roundRect(x,y,w,4,2);ctx.fillStyle=done?ACD:'rgba(255,255,255,.12)';ctx.fill();
-    if(on){roundRect(x,y,w*ease(localProg),4,2);ctx.fillStyle=AC;ctx.shadowColor=AC;ctx.shadowBlur=10;ctx.fill();}ctx.restore();
-    text(STEPS[i],x,y+20,9.5,on?LAV:(done?'#6f7a95':'#4c5570'),700,1.2,'left');text(String(i+1),x+w-1,y+20,9.5,on?AC:'#4c5570',700,0,'right');}}
-function caption(title,sub){text(title,LW/2,718,15,TX,700,.3,'center');text(sub,LW/2,738,11.5,SUB,500,.2,'center');}
-function drawGround(a){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle='rgba(150,165,200,.28)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,GY);ctx.lineTo(LW,GY);ctx.stroke();dot(TEEX,GY,2.5,'#9aa6c0',0,a);ctx.restore();}
-function ci(){return [1,3,5,7,9,11,13,15,17,19];}
-function drawArcPath(f0,f1,col,w,blur,a,dash){glowStroke(col,blur,w,a);if(dash)ctx.setLineDash(dash);ctx.beginPath();const steps=60;let st=false;for(let k=0;k<=steps;k++){const p=arcAt(lerp(f0,f1,k/steps));if(!st){ctx.moveTo(p.x,p.y);st=true;}else ctx.lineTo(p.x,p.y);}ctx.stroke();ctx.restore();}
-function ball(p,r,a){dot(p.x,p.y,r*2.4,LAV,16,0.5*a);dot(p.x,p.y,r*1.5,WARM,14,0.9*a);dot(p.x,p.y,r,'#ffffff',8,a);}
-function reticle(x,y,s,a,col){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.shadowColor=col;ctx.shadowBlur=8;const g=s*0.5;ctx.beginPath();
-  ctx.moveTo(x-s,y-s+g);ctx.lineTo(x-s,y-s);ctx.lineTo(x-s+g,y-s);ctx.moveTo(x+s-g,y-s);ctx.lineTo(x+s,y-s);ctx.lineTo(x+s,y-s+g);
-  ctx.moveTo(x+s,y+s-g);ctx.lineTo(x+s,y+s);ctx.lineTo(x+s-g,y+s);ctx.moveTo(x-s+g,y+s);ctx.lineTo(x-s,y+s);ctx.lineTo(x-s,y+s-g);ctx.stroke();ctx.restore();}
-function vfB(x,y,w,h,a){if(a<=0)return;ctx.save();ctx.globalAlpha=a*0.7;ctx.strokeStyle='rgba(205,188,242,.55)';ctx.lineWidth=1.4;ctx.shadowColor=AC;ctx.shadowBlur=6;const g=16;
-  [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]].forEach(([cx,cy,sx,sy])=>{ctx.beginPath();ctx.moveTo(cx+sx*g,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*g);ctx.stroke();});ctx.restore();}
-function scanline(y,a){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=AC;ctx.lineWidth=1.5;ctx.shadowColor=AC;ctx.shadowBlur=10;ctx.beginPath();ctx.moveTo(16,y);ctx.lineTo(LW-16,y);ctx.stroke();ctx.restore();}
-function pCapture(u){drawGround(1);const b={x:TEEX,y:GY-6};vfB(14,96,LW-28,556,ease(seg(u,0,0.05)));
-  const scan=seg(u,0.03,0.11);if(scan>0&&scan<1)scanline(lerp(110,GY-4,scan),0.5);
-  const sw=ease(seg(u,0.04,0.128));const P={x:TEEX+30,y:GY-205},R=Math.hypot(b.x-P.x,b.y-P.y);
-  const aB=Math.atan2(b.y-P.y,b.x-P.x),a0=aB-2.4,aN=lerp(a0,aB,sw);
-  glowStroke(LAV,10,3,0.75);ctx.beginPath();ctx.arc(P.x,P.y,R,a0,aN);ctx.stroke();ctx.restore();
-  dot(P.x+R*Math.cos(aN),P.y+R*Math.sin(aN),4.5,WARM,12,1);dot(b.x,b.y,5,'#eef',6,1);
-  const lock=seg(u,0.085,0.135);if(lock>0)reticle(b.x,b.y,16-6*ease(lock),ease(lock),AC);
-  text('DETECTING',b.x+16,b.y-4,10.5,LAV,700,.6,'left');
-  const fl=seg(u,0.128,0.15);if(fl>0)dot(b.x,b.y,6+34*ease(fl),WARM,30,(1-fl)*0.9);
-  caption('1 · Capture','Reading the swing and the strike');}
-function pCollect(u){drawGround(1);const l=seg(u,0.15,0.45);const idx=ci();const shown=Math.floor(ease(l)*idx.length+0.001);
-  const leadF=(idx[Math.min(shown,idx.length-1)])/(ARC.length-1);drawArcPath(0,leadF,'rgba(143,116,224,.35)',2,6,1);
-  for(let k=0;k<shown;k++){const f=idx[k]/(ARC.length-1),p=arcAt(f);const pop=ease(seg(l,k/idx.length,k/idx.length+0.08));reticle(p.x,p.y,7,0.9,AC);dot(p.x,p.y,2.4,WARM,8,1);if(k===shown-1)reticle(p.x,p.y,7+8*(1-pop),1,LAV);}
-  const p=arcAt(leadF);ball(p,4.5,1);text('TRACKING · f'+String(shown).padStart(2,'0'),p.x+16,p.y-6,11,LAV,700,.5,'left');
-  caption('2 · Collect','Tracking the ball, frame by frame');}
-function pEstimate(u){drawGround(1);const l=seg(u,0.45,0.70);const idx=ci();const measF=idx[idx.length-1]/(ARC.length-1);
-  for(let k=0;k<idx.length;k++){const f=idx[k]/(ARC.length-1),pp=arcAt(f);reticle(pp.x,pp.y,6,0.55,ACD);dot(pp.x,pp.y,2,WARM,6,.8);}
-  drawArcPath(0,measF,LAV,3,10,0.9);const estF=lerp(measF,1,ease(l));drawArcPath(measF,estF,WARM,2.6,10,1,[6,7]);
-  const p=arcAt(estF);ball(p,4.5,1);const pa=ease(seg(u,0.48,0.58));ctx.save();ctx.globalAlpha=pa;
-  const px=24,py=470,pw=LW-48,ph=96;roundRect(px,py,pw,ph,14);ctx.fillStyle='rgba(10,12,22,.72)';ctx.fill();ctx.lineWidth=1;ctx.strokeStyle='rgba(143,116,224,.35)';ctx.stroke();
-  roundRect(px,py,4,ph,2);ctx.fillStyle=AC;ctx.shadowColor=AC;ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
-  text('ESTIMATED SHOT',px+18,py+22,9.5,LAV,700,1.4,'left');const cu=ease(seg(u,0.5,0.66));
-  const st=[['CARRY',Math.round(CARRY*cu),'yds'],['BALL',Math.round(BALLMPH*cu),'mph'],['LAUNCH',(LAUNCH*cu).toFixed(1),'°']];const cw=pw/3;
-  st.forEach((s,i)=>{const sx=px+18+i*cw;text(String(s[1]),sx,py+58,26,TX,700,0,'left');text(s[2],sx+(''+s[1]).length*15+2,py+58,11,SUB,600,0,'left');text(s[0],sx,py+80,9,SUB,700,1,'left');});
-  ctx.restore();caption('3 · Estimate','Carry, ball speed, launch angle');}
-function drawTop(a){if(a<=0)return;ctx.save();ctx.globalAlpha=a;const cx=LW/2,topY=150,botY=650,topW=70,botW=230;
-  const g=ctx.createLinearGradient(0,topY,0,botY);g.addColorStop(0,'#111e18');g.addColorStop(1,'#17281f');
-  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-topW/2,topY);ctx.lineTo(cx+topW/2,topY);ctx.lineTo(cx+botW/2,botY);ctx.lineTo(cx-botW/2,botY);ctx.closePath();ctx.fill();
-  ctx.globalAlpha=a*0.10;ctx.strokeStyle='#bfe';for(let i=1;i<7;i++){const y=lerp(topY,botY,i/7);ctx.beginPath();ctx.moveTo(lerp(cx-topW/2,cx-botW/2,i/7),y);ctx.lineTo(lerp(cx+topW/2,cx+botW/2,i/7),y);ctx.stroke();}ctx.globalAlpha=a;
-  dot(cx+6,topY+18,2,'#eee',4,a);ctx.strokeStyle='#dfe';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx+6,topY+18);ctx.lineTo(cx+6,topY+6);ctx.stroke();ctx.fillStyle='#e2603a';ctx.beginPath();ctx.moveTo(cx+6,topY+6);ctx.lineTo(cx+16,topY+9);ctx.lineTo(cx+6,topY+12);ctx.fill();
-  const ex=cx-6,ey=360,rx=54,ry=92;const rg=ctx.createRadialGradient(ex,ey,4,ex,ey,ry);rg.addColorStop(0,'rgba(143,116,224,.42)');rg.addColorStop(.55,'rgba(143,116,224,.20)');rg.addColorStop(1,'rgba(143,116,224,0)');
-  ctx.save();ctx.translate(ex,ey);ctx.scale(rx/ry,1);ctx.fillStyle=rg;ctx.beginPath();ctx.arc(0,0,ry,0,7);ctx.fill();
-  ctx.strokeStyle='rgba(205,188,242,.5)';ctx.lineWidth=1.4;ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(0,0,ry,0,7);ctx.stroke();
-  ctx.setLineDash([]);ctx.strokeStyle='rgba(205,188,242,.85)';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,0,ry*0.62,0,7);ctx.stroke();ctx.restore();
-  reticle(ex,ey,10,a,LAV);dot(ex,ey,3.5,'#fff',8,a);text('68%',ex+rx*0.62+6,ey-2,9,LAV,700,.5,'left');text('95%',ex+rx+8,ey+ry*0.5,9,'rgba(205,188,242,.7)',700,.5,'left');
-  const px=24,py=560,pw=LW-48,ph=74;roundRect(px,py,pw,ph,14);ctx.fillStyle='rgba(10,12,22,.78)';ctx.fill();ctx.lineWidth=1;ctx.strokeStyle='rgba(143,116,224,.35)';ctx.stroke();
-  text('YOUR CADDY · ESTIMATED',px+16,py+20,9,LAV,700,1.3,'left');text('7-iron',px+16,py+52,26,TX,700,0,'left');text('~150–160 yds',px+pw-16,py+34,13,TX,700,0,'right');text('find your ball',px+pw-16,py+52,11,SUB,600,0,'right');ctx.restore();}
-function pCaddy(u){const sideA=1-ease(seg(u,0.70,0.80));if(sideA>0){drawGround(sideA);drawArcPath(0,1,LAV,3,10,0.9*sideA);const p=arcAt(1);ball(p,4.5,sideA);}drawTop(ease(seg(u,0.72,0.86)));caption('4 · Caddy','Your club and where to find it');}
-function frame(u){bg();let active=0,lp=0;
-  if(u<0.15){active=0;lp=seg(u,0,0.15);}else if(u<0.45){active=1;lp=seg(u,0.15,0.45);}else if(u<0.70){active=2;lp=seg(u,0.45,0.70);}else{active=3;lp=seg(u,0.70,1);}
-  if(u<0.15)pCapture(u);else if(u<0.45)pCollect(u);else if(u<0.70)pEstimate(u);else pCaddy(u);
-  stepRail(active,lp);}
-window.addEventListener('resize',resize);
-if(matchMedia('(prefers-reduced-motion: reduce)').matches){frame(0.9);}
-else{const PERIOD=11000;let t0=null;function loop(ts){if(t0==null)t0=ts;frame(((ts-t0)%PERIOD)/PERIOD);requestAnimationFrame(loop);}requestAnimationFrame(loop);}
-})();
 </script>
 </body></html>
