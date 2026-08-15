@@ -1,0 +1,160 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Continuum — a personal AI golf caddy, read from your phone</title>
+<meta name="description" content="Continuum reads your swing and ball from ordinary phone video, estimates the shot like a launch monitor, and caddies for you on the course. Live pipeline demo.">
+<meta property="og:title" content="Continuum — personal AI golf caddy">
+<meta property="og:description" content="From phone video to an estimated shot and a find-your-ball landing zone. Live pipeline animation.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg0:#06070c;--bg1:#10131d;--ink:#eef2f9;--sub:#8b93a7;--accent:#8f74e0;--line:rgba(255,255,255,.08);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{min-height:100%;background:radial-gradient(130% 90% at 50% -10%,var(--bg1),var(--bg0) 60%);color:var(--ink);
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;
+    line-height:1.6;overflow-x:hidden;}
+  .wrap{max-width:1060px;margin:0 auto;padding:22px clamp(18px,4vw,34px) 60px;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-block:6px 30px;}
+  .brand{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:1.3rem;letter-spacing:-.01em;}
+  .brand .dot{color:#c0632f;}
+  .tag{font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+    border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:999px;padding:6px 12px;}
+  .hero{display:grid;grid-template-columns:1fr;gap:clamp(26px,4vw,46px);align-items:center;}
+  @media(min-width:860px){.hero{grid-template-columns:1.02fr .98fr;}}
+  .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+  h1{font-family:"Fraunces",Georgia,serif;font-weight:600;line-height:1.04;letter-spacing:-.02em;
+    font-size:clamp(2.2rem,1.4rem+3.6vw,3.7rem);margin:.5rem 0 0;text-wrap:balance;}
+  h1 .i{font-style:italic;color:#cdbcf2;}
+  .lede{color:var(--sub);font-size:clamp(1.02rem,.98rem+.5vw,1.22rem);max-width:38ch;margin-top:1.1rem;}
+  .steps{display:grid;gap:12px;margin-top:1.9rem;}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:baseline;}
+  .step .n{font-family:"Fraunces",serif;font-weight:600;color:var(--accent);width:26px;height:26px;flex:none;
+    border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:.82rem;}
+  .step b{font-weight:650;} .step span{color:var(--sub);font-size:.95rem;}
+  .stage{display:grid;place-items:center;}
+  .phone{width:min(330px,84vw);aspect-ratio:390/760;border-radius:30px;overflow:hidden;position:relative;
+    background:#06070c;box-shadow:0 44px 100px -36px #000,0 0 0 1px rgba(255,255,255,.06);}
+  .phone canvas{width:100%;height:100%;display:block;}
+  footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 18px;
+    justify-content:space-between;color:var(--sub);font-size:.86rem;}
+  .honest{max-width:70ch;color:var(--sub);font-size:.9rem;margin-top:30px;padding:14px 16px;border:1px solid var(--line);
+    border-radius:12px;background:rgba(255,255,255,.02);}
+  .honest b{color:var(--ink);font-weight:600;}
+</style></head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Continuum<span class="dot">.</span></div>
+    <span class="tag">Personal AI golf caddy</span>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow">How it works</p>
+      <h1>Every shot, <span class="i">read off your phone.</span></h1>
+      <p class="lede">Continuum reads your swing and ball from ordinary phone video, estimates the shot like a launch monitor, and caddies for you on the course.</p>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><span><b>Capture.</b> Computer vision catches the swing and the strike.</span></div>
+        <div class="step"><span class="n">2</span><span><b>Collect.</b> The ball is tracked frame by frame off the face.</span></div>
+        <div class="step"><span class="n">3</span><span><b>Estimate.</b> Carry, ball speed and launch, from the flight.</span></div>
+        <div class="step"><span class="n">4</span><span><b>Caddy.</b> Your club and a landing zone to find your ball.</span></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="phone"><canvas id="c"></canvas></div>
+    </div>
+  </section>
+
+  <p class="honest"><b>Honest by design.</b> The flight is a physically-modeled estimate (drag + lift), shown with measured points versus the estimated remainder, distances as ranges, and a confidence oval — never radar-grade precision. Numbers here are illustrative.</p>
+
+  <footer>
+    <span>Continuum — a personal AI golf caddy, read from your phone.</span>
+    <span>Honest estimation today, measurement as the data earns it.</span>
+  </footer>
+</div>
+
+<script>
+const ARC=[[0.0007,0.0011],[0.0397,0.07],[0.0768,0.1389],[0.1122,0.2073],[0.146,0.2745],[0.1784,0.3402],[0.2094,0.4039],[0.2391,0.4653],[0.2677,0.5242],[0.2952,0.5802],[0.3222,0.6341],[0.3479,0.684],[0.3727,0.7305],[0.3968,0.7735],[0.4201,0.813],[0.4428,0.8489],[0.4649,0.8811],[0.4865,0.9095],[0.5075,0.9341],[0.5284,0.9552],[0.5485,0.972],[0.5682,0.9849],[0.5875,0.9939],[0.6065,0.9989],[0.6251,1.0],[0.6435,0.9972],[0.6615,0.9904],[0.6793,0.9797],[0.6968,0.9651],[0.7144,0.9463],[0.7315,0.9239],[0.7484,0.8977],[0.7651,0.8677],[0.7816,0.8339],[0.7979,0.7965],[0.8141,0.7555],[0.8301,0.7108],[0.846,0.6626],[0.8621,0.6101],[0.8777,0.555],[0.8933,0.4966],[0.9087,0.4349],[0.9241,0.37],[0.9394,0.3021],[0.9545,0.2311],[0.9697,0.1571],[0.9847,0.0803],[1.0,-0.0007]];
+const CARRY=156, BALLMPH=110, LAUNCH=17.5;
+const LW=390, LH=760;
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);cv.width=LW*dpr;cv.height=LH*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+resize();
+const BG0='#0a0d16',BG1='#10182b',AC='#8f74e0',ACD='#6d57c0',LAV='#cdbcf2',WARM='#ffe7bd',TX='#eef2f9',SUB='#7c88a2',GRID='rgba(255,255,255,.05)';
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+const seg=(u,s,e)=>clamp((u-s)/(e-s),0,1);
+const GY=632, TEEX=66, LANDX=330, FH=452;
+function arcAt(f){const n=ARC.length-1,p=clamp(f,0,1)*n,i=Math.floor(p),t=p-i;const a=ARC[Math.min(i,n)],b=ARC[Math.min(i+1,n)];return {x:lerp(TEEX,LANDX,lerp(a[0],b[0],t)),y:GY-lerp(a[1],b[1],t)*FH};}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function glowStroke(col,blur,w,a){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor=col;ctx.shadowBlur=blur;ctx.globalAlpha=a;}
+function dot(x,y,r,col,blur,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=blur||0;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.restore();}
+function text(s,x,y,size,col,weight,spacing,align){ctx.save();ctx.fillStyle=col;ctx.textAlign=align||'left';ctx.textBaseline='alphabetic';ctx.font=(weight||600)+' '+size+'px ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif';if(spacing){let cx=x;const tot=s.split('').reduce((w,ch)=>w+ctx.measureText(ch).width+spacing,0)-spacing;if(align==='center')cx=x-tot/2;else if(align==='right')cx=x-tot;ctx.textAlign='left';for(const ch of s){ctx.fillText(ch,cx,y);cx+=ctx.measureText(ch).width+spacing;}}else ctx.fillText(s,x,y);ctx.restore();}
+function bg(){const g=ctx.createLinearGradient(0,0,0,LH);g.addColorStop(0,BG1);g.addColorStop(.55,BG0);g.addColorStop(1,'#070a11');ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
+  ctx.strokeStyle=GRID;ctx.lineWidth=1;for(let x=0;x<=LW;x+=26){ctx.beginPath();ctx.moveTo(x,80);ctx.lineTo(x,690);ctx.stroke();}for(let y=80;y<=690;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(LW,y);ctx.stroke();}
+  const v=ctx.createRadialGradient(LW/2,LH*0.5,120,LW/2,LH*0.5,LW*0.9);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');ctx.fillStyle=v;ctx.fillRect(0,0,LW,LH);}
+const STEPS=['CAPTURE','COLLECT','ESTIMATE','CADDY'];
+function stepRail(active,localProg){const y=40,x0=20,x1=LW-20,gap=8,w=(x1-x0-gap*3)/4;
+  for(let i=0;i<4;i++){const x=x0+i*(w+gap),done=i<active,on=i===active;ctx.save();roundRect(x,y,w,4,2);ctx.fillStyle=done?ACD:'rgba(255,255,255,.12)';ctx.fill();
+    if(on){roundRect(x,y,w*ease(localProg),4,2);ctx.fillStyle=AC;ctx.shadowColor=AC;ctx.shadowBlur=10;ctx.fill();}ctx.restore();
+    text(STEPS[i],x,y+20,9.5,on?LAV:(done?'#6f7a95':'#4c5570'),700,1.2,'left');text(String(i+1),x+w-1,y+20,9.5,on?AC:'#4c5570',700,0,'right');}}
+function caption(title,sub,a){ctx.globalAlpha=a==null?1:a;text(title,LW/2,718,15,TX,700,.3,'center');text(sub,LW/2,738,11.5,SUB,500,.2,'center');ctx.globalAlpha=1;}
+function drawGround(a){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle='rgba(150,165,200,.28)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,GY);ctx.lineTo(LW,GY);ctx.stroke();dot(TEEX,GY,2.5,'#9aa6c0',0,a);ctx.restore();}
+function collectedIndices(){return [1,3,5,7,9,11,13,15,17,19];}
+function drawArcPath(f0,f1,col,w,blur,a,dash){glowStroke(col,blur,w,a);if(dash)ctx.setLineDash(dash);ctx.beginPath();const steps=60;let st=false;for(let k=0;k<=steps;k++){const p=arcAt(lerp(f0,f1,k/steps));if(!st){ctx.moveTo(p.x,p.y);st=true;}else ctx.lineTo(p.x,p.y);}ctx.stroke();ctx.restore();}
+function ball(p,r,a){dot(p.x,p.y,r*2.4,LAV,16,0.5*a);dot(p.x,p.y,r*1.5,WARM,14,0.9*a);dot(p.x,p.y,r,'#ffffff',8,a);}
+function reticle(x,y,s,a,col){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.shadowColor=col;ctx.shadowBlur=8;const g=s*0.5;ctx.beginPath();
+  ctx.moveTo(x-s,y-s+g);ctx.lineTo(x-s,y-s);ctx.lineTo(x-s+g,y-s);ctx.moveTo(x+s-g,y-s);ctx.lineTo(x+s,y-s);ctx.lineTo(x+s,y-s+g);
+  ctx.moveTo(x+s,y+s-g);ctx.lineTo(x+s,y+s);ctx.lineTo(x+s-g,y+s);ctx.moveTo(x-s+g,y+s);ctx.lineTo(x-s,y+s);ctx.lineTo(x-s,y+s-g);ctx.stroke();ctx.restore();}
+function vfBrackets(x,y,w,h,a){if(a<=0)return;ctx.save();ctx.globalAlpha=a*0.7;ctx.strokeStyle='rgba(205,188,242,.55)';ctx.lineWidth=1.4;ctx.shadowColor=AC;ctx.shadowBlur=6;const g=16;
+  [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]].forEach(([cx,cy,sx,sy])=>{ctx.beginPath();ctx.moveTo(cx+sx*g,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*g);ctx.stroke();});ctx.restore();}
+function scanline(y,a){ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=AC;ctx.lineWidth=1.5;ctx.shadowColor=AC;ctx.shadowBlur=10;ctx.beginPath();ctx.moveTo(16,y);ctx.lineTo(LW-16,y);ctx.stroke();ctx.restore();}
+function phaseCapture(u){drawGround(1);const ball2={x:TEEX,y:GY-6};vfBrackets(14,96,LW-28,556,ease(seg(u,0,0.05)));
+  const scan=seg(u,0.03,0.11);if(scan>0&&scan<1)scanline(lerp(110,GY-4,scan),0.5);
+  const sw=ease(seg(u,0.04,0.128));const P={x:TEEX+30,y:GY-205},R=Math.hypot(ball2.x-P.x,ball2.y-P.y);
+  const aBall=Math.atan2(ball2.y-P.y,ball2.x-P.x),a0=aBall-2.4,aNow=lerp(a0,aBall,sw);
+  glowStroke(LAV,10,3,0.75);ctx.beginPath();ctx.arc(P.x,P.y,R,a0,aNow);ctx.stroke();ctx.restore();
+  dot(P.x+R*Math.cos(aNow),P.y+R*Math.sin(aNow),4.5,WARM,12,1);dot(ball2.x,ball2.y,5,'#eef',6,1);
+  const lock=seg(u,0.085,0.135);if(lock>0)reticle(ball2.x,ball2.y,16-6*ease(lock),ease(lock),AC);
+  text('DETECTING',ball2.x+16,ball2.y-4,10.5,LAV,700,.6,'left');
+  const fl=seg(u,0.128,0.15);if(fl>0)dot(ball2.x,ball2.y,6+34*ease(fl),WARM,30,(1-fl)*0.9);
+  caption('1 · Capture','Reading the swing and the strike',1);}
+function phaseCollect(u){drawGround(1);const l=seg(u,0.15,0.45);const idx=collectedIndices();const shown=Math.floor(ease(l)*idx.length+0.001);
+  const leadF=(idx[Math.min(shown,idx.length-1)])/(ARC.length-1);drawArcPath(0,leadF,'rgba(143,116,224,.35)',2,6,1);
+  for(let k=0;k<shown;k++){const f=idx[k]/(ARC.length-1),p=arcAt(f);const pop=ease(seg(l,k/idx.length,k/idx.length+0.08));reticle(p.x,p.y,7,0.9,AC);dot(p.x,p.y,2.4,WARM,8,1);if(k===shown-1)reticle(p.x,p.y,7+8*(1-pop),1,LAV);}
+  const p=arcAt(leadF);ball(p,4.5,1);text('TRACKING · f'+String(shown).padStart(2,'0'),p.x+16,p.y-6,11,LAV,700,.5,'left');
+  caption('2 · Collect','Tracking the ball, frame by frame',1);}
+function phaseEstimate(u){drawGround(1);const l=seg(u,0.45,0.70);const idx=collectedIndices();const measF=idx[idx.length-1]/(ARC.length-1);
+  for(let k=0;k<idx.length;k++){const f=idx[k]/(ARC.length-1),pp=arcAt(f);reticle(pp.x,pp.y,6,0.55,ACD);dot(pp.x,pp.y,2,WARM,6,.8);}
+  drawArcPath(0,measF,LAV,3,10,0.9);const grow=ease(l);const estF=lerp(measF,1,grow);drawArcPath(measF,estF,WARM,2.6,10,1,[6,7]);
+  const p=arcAt(estF);ball(p,4.5,1);const pa=ease(seg(u,0.48,0.58));ctx.save();ctx.globalAlpha=pa;
+  const px=24,py=470,pw=LW-48,ph=96;roundRect(px,py,pw,ph,14);ctx.fillStyle='rgba(10,12,22,.72)';ctx.fill();ctx.lineWidth=1;ctx.strokeStyle='rgba(143,116,224,.35)';ctx.stroke();
+  roundRect(px,py,4,ph,2);ctx.fillStyle=AC;ctx.shadowColor=AC;ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
+  text('ESTIMATED SHOT',px+18,py+22,9.5,LAV,700,1.4,'left');const cu=ease(seg(u,0.5,0.66));
+  const stats=[['CARRY',Math.round(CARRY*cu),'yds'],['BALL',Math.round(BALLMPH*cu),'mph'],['LAUNCH',(LAUNCH*cu).toFixed(1),'°']];const cw=pw/3;
+  stats.forEach((s,i)=>{const sx=px+18+i*cw;text(String(s[1]),sx,py+58,26,TX,700,0,'left');text(s[2],sx+(''+s[1]).length*15+2,py+58,11,SUB,600,0,'left');text(s[0],sx,py+80,9,SUB,700,1,'left');});
+  ctx.restore();caption('3 · Estimate','Carry, ball speed, launch angle',1);}
+function drawTopDown(a){if(a<=0)return;ctx.save();ctx.globalAlpha=a;const cx=LW/2,topY=150,botY=650,topW=70,botW=230;
+  const g=ctx.createLinearGradient(0,topY,0,botY);g.addColorStop(0,'#111e18');g.addColorStop(1,'#17281f');
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-topW/2,topY);ctx.lineTo(cx+topW/2,topY);ctx.lineTo(cx+botW/2,botY);ctx.lineTo(cx-botW/2,botY);ctx.closePath();ctx.fill();
+  ctx.globalAlpha=a*0.10;ctx.strokeStyle='#bfe';for(let i=1;i<7;i++){const y=lerp(topY,botY,i/7);ctx.beginPath();ctx.moveTo(lerp(cx-topW/2,cx-botW/2,i/7),y);ctx.lineTo(lerp(cx+topW/2,cx+botW/2,i/7),y);ctx.stroke();}ctx.globalAlpha=a;
+  dot(cx+6,topY+18,2,'#eee',4,a);ctx.strokeStyle='#dfe';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx+6,topY+18);ctx.lineTo(cx+6,topY+6);ctx.stroke();ctx.fillStyle='#e2603a';ctx.beginPath();ctx.moveTo(cx+6,topY+6);ctx.lineTo(cx+16,topY+9);ctx.lineTo(cx+6,topY+12);ctx.fill();
+  const ex=cx-6,ey=360,rx=54,ry=92;const rg=ctx.createRadialGradient(ex,ey,4,ex,ey,ry);rg.addColorStop(0,'rgba(143,116,224,.42)');rg.addColorStop(.55,'rgba(143,116,224,.20)');rg.addColorStop(1,'rgba(143,116,224,0)');
+  ctx.save();ctx.translate(ex,ey);ctx.scale(rx/ry,1);ctx.fillStyle=rg;ctx.beginPath();ctx.arc(0,0,ry,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(205,188,242,.5)';ctx.lineWidth=1.4;ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(0,0,ry,0,7);ctx.stroke();
+  ctx.setLineDash([]);ctx.strokeStyle='rgba(205,188,242,.85)';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,0,ry*0.62,0,7);ctx.stroke();ctx.restore();
+  reticle(ex,ey,10,a,LAV);dot(ex,ey,3.5,'#fff',8,a);text('68%',ex+rx*0.62+6,ey-2,9,LAV,700,.5,'left');text('95%',ex+rx+8,ey+ry*0.5,9,'rgba(205,188,242,.7)',700,.5,'left');
+  const px=24,py=560,pw=LW-48,ph=74;roundRect(px,py,pw,ph,14);ctx.fillStyle='rgba(10,12,22,.78)';ctx.fill();ctx.lineWidth=1;ctx.strokeStyle='rgba(143,116,224,.35)';ctx.stroke();
+  text('YOUR CADDY · ESTIMATED',px+16,py+20,9,LAV,700,1.3,'left');text('7-iron',px+16,py+52,26,TX,700,0,'left');text('~150–160 yds',px+pw-16,py+34,13,TX,700,0,'right');text('find your ball',px+pw-16,py+52,11,SUB,600,0,'right');ctx.restore();}
+function phaseCaddy(u){const sideA=1-ease(seg(u,0.70,0.80));if(sideA>0){drawGround(sideA);drawArcPath(0,1,LAV,3,10,0.9*sideA);const p=arcAt(1);ball(p,4.5,sideA);}drawTopDown(ease(seg(u,0.72,0.86)));caption('4 · Caddy','Your club and where to find it',1);}
+function frame(u){bg();let active=0,lp=0;
+  if(u<0.15){active=0;lp=seg(u,0,0.15);}else if(u<0.45){active=1;lp=seg(u,0.15,0.45);}else if(u<0.70){active=2;lp=seg(u,0.45,0.70);}else{active=3;lp=seg(u,0.70,1);}
+  if(u<0.15)phaseCapture(u);else if(u<0.45)phaseCollect(u);else if(u<0.70)phaseEstimate(u);else phaseCaddy(u);
+  stepRail(active,lp);}
+if(matchMedia('(prefers-reduced-motion: reduce)').matches){resize();frame(0.9);}
+else{const PERIOD=11000;let t0=null;function loop(ts){if(t0==null)t0=ts;frame(((ts-t0)%PERIOD)/PERIOD);requestAnimationFrame(loop);}requestAnimationFrame(loop);}
+window.addEventListener('resize',resize);
+</script>
+</body></html>
