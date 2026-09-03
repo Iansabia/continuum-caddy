@@ -305,8 +305,8 @@
       <figure class="film" data-reveal>
         <div class="film-stage" role="img" aria-label="A generic phone clamped to a golf cart rail films a real golf swing. Body landmarks and the ball are tracked frame by frame on the phone's screen; the ball then leaves the screen and flies a 156-yard arc, landing inside a shaded dispersion area with a short-left smart miss marked.">
           <picture class="film-poster">
-            <source srcset="assets/how/poster.webp?v=2" type="image/webp">
-            <img src="assets/how/poster.webp?v=2" width="1280" height="800" alt="" decoding="async">
+            <source srcset="assets/how/poster.webp?v=3" type="image/webp">
+            <img src="assets/how/poster.webp?v=3" width="1280" height="800" alt="" decoding="async">
           </picture>
           <video class="film-video" muted playsinline loop preload="none" aria-hidden="true" disablepictureinpicture></video>
         </div>
@@ -424,7 +424,7 @@
   if(!('IntersectionObserver' in window)) return;          /* no observers -> static copy, all beats readable */
 
   var BASE = 'assets/how/';
-  var V = '?v=2';   // cache-bust: bump when the film assets are re-rendered (GitHub Pages + Safari cache video hard)
+  var V = '?v=3';   // cache-bust: bump when the film assets are re-rendered (GitHub Pages + Safari cache video hard)
   var STILLS = ['still_0.webp','still_1.webp','still_2.webp','still_3.webp','still_4.webp']
                  .map(function(n){ return BASE + n + V; });
   var LOAD_TIMEOUT = 3000;                                  /* Apple's data-load-timeout */
