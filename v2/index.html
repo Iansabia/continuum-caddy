@@ -1,0 +1,490 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Continuum: a personal AI golf caddy, read from your phone</title>
+<meta name="description" content="Continuum reads your swing and ball from ordinary phone video, understands your game like a launch monitor, and caddies for you on the course: club, strategy, and where your ball came down.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light dark;
+    --bg:#f6f3ee; --surface:#fffdfa; --fg:#1d1830; --muted:#6b6480;
+    --line:rgba(29,24,48,.12); --line-strong:rgba(29,24,48,.22);
+    --field:#141026; --field-fg:#efeaf6; --field-line:rgba(239,234,246,.16);
+    --accent:#604c9c; --accent-2:#9e8cb4; --accent-fg:#ffffff; --warm:#c0632f;
+    --grid:rgba(29,24,48,.05); --glow:rgba(255,255,255,.55);
+    --step-0:clamp(1rem,.95rem + .25vw,1.125rem);
+    --step-1:clamp(1.25rem,1.1rem + .7vw,1.6rem);
+    --step-2:clamp(1.6rem,1.3rem + 1.4vw,2.4rem);
+    --step-3:clamp(2rem,1.5rem + 2.4vw,3.2rem);
+    --step-4:clamp(2.6rem,1.85rem + 3.9vw,4.6rem);
+    --step-5:clamp(3rem,2rem + 5.4vw,6rem);
+    --ease-out:cubic-bezier(.22,1,.36,1); --spring:cubic-bezier(.34,1.56,.64,1);
+    --pad:clamp(3.5rem,7vw,6.5rem); --radius:9px; --maxw:1180px; --nav:62px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#100c20; --surface:#191333; --fg:#ece8f4; --muted:#a89fc2;
+      --line:rgba(236,232,244,.14); --line-strong:rgba(236,232,244,.26);
+      --accent:#b6a6cc; --accent-2:#9e8cb4; --accent-fg:#141026; --warm:#e08a55; --grid:rgba(236,232,244,.05); --glow:rgba(182,166,204,.28); }
+  }
+  :root[data-theme="dark"]{ color-scheme:dark; --bg:#100c20; --surface:#191333; --fg:#ece8f4; --muted:#a89fc2;
+    --line:rgba(236,232,244,.14); --line-strong:rgba(236,232,244,.26); --accent:#b6a6cc; --accent-2:#9e8cb4; --accent-fg:#141026; --warm:#e08a55; --grid:rgba(236,232,244,.05); --glow:rgba(182,166,204,.28); }
+  :root[data-theme="light"]{ color-scheme:light; --bg:#f6f3ee; --surface:#fffdfa; --fg:#1d1830; --muted:#6b6480;
+    --line:rgba(29,24,48,.12); --line-strong:rgba(29,24,48,.22); --accent:#604c9c; --accent-2:#9e8cb4; --accent-fg:#ffffff; --warm:#c0632f; --grid:rgba(29,24,48,.05); --glow:rgba(255,255,255,.55); }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:var(--step-0);line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:clamp(20px,4vw,32px);}
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;line-height:1.04;letter-spacing:-.022em;text-wrap:balance;font-optical-sizing:auto;}
+  p{text-wrap:pretty;} a{color:inherit;}
+  .display-xxl{font-size:var(--step-5);} .display-xl{font-size:var(--step-4);} .display-l{font-size:var(--step-3);} .display-m{font-size:var(--step-2);}
+  .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+  .muted{color:var(--muted);} .tnum{font-variant-numeric:tabular-nums;}
+  .prose{max-inline-size:62ch;color:var(--muted);font-size:1.02rem;}
+  :focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  .skip{position:absolute;left:12px;top:-60px;background:var(--surface);color:var(--fg);padding:10px 16px;border-radius:var(--radius);border:1px solid var(--line);z-index:100;transition:top .18s var(--ease-out);}
+  .skip:focus{top:12px;}
+  [data-reveal]{opacity:.001;transform:translateY(14px);transition:opacity .6s var(--ease-out),transform .6s var(--ease-out);transition-delay:calc(var(--i,0)*70ms);}
+  [data-reveal].in{opacity:1;transform:none;}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.03;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  main,header,footer{position:relative;z-index:2;}
+
+  /* header */
+  header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:var(--nav);gap:16px;}
+  .brand{font-family:"Fraunces",serif;font-weight:600;font-size:1.25rem;letter-spacing:-.01em;} .brand .dot{color:var(--warm);}
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .navlinks{display:flex;gap:22px;font-size:.9rem;color:var(--muted);margin-right:8px;}
+  .navlinks a{text-decoration:none;position:relative;} .navlinks a::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1.5px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .25s var(--ease-out);}
+  .navlinks a:hover::after{transform:scaleX(1);}
+  @media (max-width:760px){.navlinks{display:none;}}
+  @media (max-width:600px){.nav .btn .long,.nav .btn .arw{display:none;}.nav .btn{padding:9px 14px;}}
+  .iconbtn{width:38px;height:38px;display:grid;place-items:center;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;transition:transform .18s var(--ease-out),border-color .18s;}
+  .iconbtn:hover{transform:translateY(-1px);border-color:var(--line-strong);}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:650;font-size:.95rem;padding:12px 20px;border-radius:999px;border:1px solid transparent;cursor:pointer;text-decoration:none;white-space:nowrap;transition:transform .18s var(--ease-out),filter .18s,box-shadow .25s;}
+  .btn.primary{background:var(--accent);color:var(--accent-fg);}
+  .btn.primary:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 12px 28px -14px color-mix(in srgb,var(--accent) 70%,transparent);}
+  .btn.ghost{border-color:var(--line-strong);background:var(--surface);color:var(--fg);} .btn.ghost:hover{transform:translateY(-2px);}
+  .btn .arw{transition:transform .18s var(--ease-out);} .btn:hover .arw{transform:translateX(3px);}
+  .nav .btn{padding:9px 16px;font-size:.9rem;}
+
+  /* the shot: the page opens on it. Left column = the headline (intro state) or the chapters (scrub state); right = the stage */
+  .shot{position:relative;}
+  .shot::before{content:"";position:absolute;inset:0 0 auto 0;height:100vh;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:26px 26px;-webkit-mask-image:radial-gradient(60% 70% at 30% 0%,#000,transparent 75%);mask-image:radial-gradient(60% 70% at 30% 0%,#000,transparent 75%);}
+  .shot.is-pinned{height:460vh;}
+  .shot-sticky{position:sticky;top:var(--nav);height:calc(100dvh - var(--nav));display:grid;grid-template-columns:minmax(280px,.36fr) 1fr;grid-template-areas:"col stage";gap:clamp(20px,3vw,48px);align-items:center;max-width:1480px;margin:0 auto;padding-inline:clamp(20px,4vw,40px);}
+  .intro,.chapters{grid-area:col;transition:opacity .45s var(--ease-out),transform .45s var(--ease-out);}
+  .stage{grid-area:stage;}
+  .shot.is-pinned .intro{opacity:0;transform:translateY(-14px);pointer-events:none;}
+  .shot.is-pinned.is-intro .intro{opacity:1;transform:none;pointer-events:auto;}
+  .shot.is-pinned .chapters{opacity:1;transform:none;}
+  .shot.is-pinned.is-intro .chapters{opacity:0;transform:translateY(14px);pointer-events:none;}
+  .shot.is-pinned .chapters{max-height:calc(100dvh - var(--nav) - 24px);overflow:hidden;}
+  .intro h1{margin-top:.6rem;max-width:12ch;font-size:clamp(2.4rem,1.5rem + 2.7vw,3.9rem);} .intro h1 .ink{color:var(--accent);font-style:italic;}
+  .shot:not(.is-pinned) .intro h1{max-width:14ch;}
+  .intro .sub{font-size:clamp(1rem,.95rem + .35vw,1.2rem);color:var(--muted);max-width:40ch;margin-top:1rem;font-weight:450;}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:1.4rem;}
+  .micro{margin-top:1rem;font-size:.84rem;color:var(--muted);max-width:40ch;}
+  .shot:not(.is-pinned) .shot-sticky{position:static;height:auto;grid-template-columns:1fr;grid-template-areas:"intro" "stage" "rail";padding-block:2.5rem 0;gap:1.6rem;}
+  .shot:not(.is-pinned) .intro{grid-area:intro;} .shot:not(.is-pinned) .chapters{grid-area:rail;}
+  .stage{position:relative;width:100%;aspect-ratio:8/5;border-radius:14px;overflow:hidden;--mx:50%;--my:40%;}
+  .stage .spot{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;transition:opacity .4s;background:radial-gradient(38% 38% at var(--mx) var(--my),var(--glow),transparent 70%);mix-blend-mode:soft-light;}
+  .stage:hover .spot{opacity:1;}
+  @media (pointer:coarse){.stage .spot{display:none;}}
+  .stage .poster,.stage canvas,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;}
+  .stage .poster{z-index:1;transition:opacity .35s var(--ease-out);}
+  .stage .poster img{width:100%;height:100%;object-fit:contain;display:block;}
+  .stage video{z-index:3;opacity:0;transition:opacity .35s var(--ease-out);}
+  .stage canvas{z-index:4;opacity:0;transition:opacity .3s var(--ease-out);}
+  .stage.mode-video video{opacity:1;} .stage.mode-video .poster,.stage.mode-scrub .poster{opacity:0;}
+  .stage.mode-scrub canvas{opacity:1;} .stage.mode-scrub video{opacity:0;}
+  .stage .hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:600 .74rem/1 system-ui;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;opacity:0;transition:opacity .4s;}
+  .stage .hint i{width:18px;height:28px;border:1.5px solid currentColor;border-radius:10px;position:relative;display:block;}
+  .stage .hint i::after{content:"";position:absolute;left:50%;top:6px;width:2px;height:6px;margin-left:-1px;background:currentColor;border-radius:2px;animation:wheel 1.6s ease-in-out infinite;}
+  @keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(9px);opacity:0}100%{transform:translateY(0);opacity:0}}
+  .shot.is-pinned .stage.mode-video .hint{opacity:1;}
+  .stage .loading{position:absolute;left:14px;bottom:14px;z-index:7;height:2px;width:120px;background:var(--line);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .3s;}
+  .stage .loading::after{content:"";position:absolute;inset:0;transform:scaleX(var(--p,0));transform-origin:left;background:var(--accent);}
+  .stage.is-loading .loading{opacity:1;}
+
+  /* chapters */
+  .chapters{position:relative;}
+  .chapters>.eyebrow{margin-bottom:12px;}
+  .rail{display:flex;flex-direction:column;gap:0;border-left:1px solid var(--line);padding-left:0;}
+  .chapter{position:relative;padding:11px 0 11px 20px;cursor:pointer;border:0;background:none;text-align:left;color:inherit;font:inherit;width:100%;}
+  .chapter::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;background:var(--accent);transform:scaleY(0);transform-origin:top;transition:transform .35s var(--ease-out);}
+  .chapter .num{font:700 .68rem/1 system-ui;letter-spacing:.16em;color:var(--muted);transition:color .3s;}
+  .chapter h3{font-size:clamp(1.05rem,.9rem + .55vw,1.3rem);margin-top:5px;color:var(--muted);transition:color .3s;}
+  .chapter .body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease-out);}
+  .chapter .body>div{overflow:hidden;}
+  .chapter p{font-size:.9rem;line-height:1.5;color:var(--muted);margin-top:7px;max-width:38ch;opacity:0;transform:translateY(6px);transition:opacity .4s var(--ease-out) .08s,transform .4s var(--ease-out) .08s;}
+  .chapter.is-active::before{transform:scaleY(1);} .chapter.is-active .num{color:var(--accent);} .chapter.is-active h3{color:var(--fg);}
+  .chapter.is-active .body{grid-template-rows:1fr;} .chapter.is-active p{opacity:1;transform:none;}
+  .figs{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:10px;}
+  .fig{display:flex;flex-direction:column;gap:2px;}
+  .fig b{font-family:"Fraunces",serif;font-weight:600;font-size:1.55rem;letter-spacing:-.02em;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums;}
+  .fig b small{font-size:.8rem;font-family:system-ui;font-weight:600;color:var(--muted);margin-left:2px;letter-spacing:0;}
+  .fig span{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+  .chip{font-size:.78rem;font-weight:650;padding:6px 11px;border-radius:999px;border:1px solid var(--line-strong);color:var(--fg);background:var(--surface);opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease-out),transform .35s var(--ease-out);}
+  .chip.warm{color:var(--warm);border-color:color-mix(in srgb,var(--warm) 45%,transparent);}
+  .chip.acc{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);}
+  .chapter.is-active .chip{opacity:1;transform:none;}
+  .chip:nth-child(2){transition-delay:.08s;} .chip:nth-child(3){transition-delay:.16s;}
+  .progress{height:2px;background:var(--line);border-radius:2px;margin-top:18px;overflow:hidden;}
+  .progress i{display:block;height:100%;width:100%;background:var(--accent);transform:scaleX(var(--p,0));transform-origin:left;}
+  .shot:not(.is-pinned) .progress{display:none;}
+  @media (max-width:900px){.shot-sticky{grid-template-columns:1fr;}}
+
+  /* proof: the real capture */
+  section{padding-block:var(--pad);}
+  .rule{border-top:1px solid var(--line);}
+  .section-head{max-width:44ch;} .section-head h2{margin-top:.6rem;} .section-head p{margin-top:1rem;}
+  .proof-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(28px,6vw,72px);align-items:center;}
+  @media (max-width:820px){.proof-grid{grid-template-columns:1fr;}}
+  .facts{display:flex;flex-direction:column;margin-top:1.6rem;border-top:1px solid var(--line);}
+  .fact{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:16px 4px;border-bottom:1px solid var(--line);align-items:baseline;}
+  .fact .n{font-family:"Fraunces",serif;font-weight:600;color:var(--accent);font-size:1.05rem;width:2ch;}
+  .fact h3{font-size:1.08rem;letter-spacing:-.01em;} .fact p{font-size:.95rem;color:var(--muted);margin-top:3px;max-width:44ch;}
+
+  .device-wrap{position:relative;width:100%;max-width:300px;margin-inline:auto;}
+  .device{position:relative;aspect-ratio:9/19.5;border-radius:56px;padding:4px;
+    background:linear-gradient(148deg,#f0ac7d 0%,#bb5f31 15%,#e19064 29%,#9f4a22 51%,#d67d4d 71%,#8c3d1b 100%);
+    box-shadow:0 1px 2px rgba(255,222,193,.55) inset,0 0 1px 1px rgba(0,0,0,.14),0 42px 84px -34px rgba(30,14,4,.55),0 10px 26px -14px rgba(20,16,38,.5);
+    transform:perspective(1200px) rotateX(var(--rx,0)) rotateY(var(--ry,0));transition:transform .35s var(--ease-out);}
+  .bezel{position:relative;height:100%;border-radius:52px;padding:5px;background:#050409;box-shadow:0 0 0 1px rgba(0,0,0,.7) inset;}
+  .screen{position:relative;height:100%;border-radius:46px;overflow:hidden;background:#05050a;display:flex;flex-direction:column;}
+  .island{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:29%;height:23px;background:#000;border-radius:999px;z-index:6;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;box-shadow:0 1px 3px rgba(0,0,0,.5);}
+  .island::after{content:"";width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#43576f,#080c14 68%);box-shadow:0 0 0 1px rgba(255,255,255,.06);}
+  .glare{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:46px;background:linear-gradient(128deg,rgba(255,255,255,.13),rgba(255,255,255,0) 30%);mix-blend-mode:screen;}
+  .k{position:absolute;z-index:0;background:linear-gradient(90deg,#7a3c1c,#c9754a 55%,#9a4c25);box-shadow:0 1px 2px rgba(0,0,0,.45);}
+  .k.left{left:-2.5px;border-radius:2px 0 0 2px;width:3px;} .k.right{right:-2.5px;border-radius:0 2px 2px 0;width:3px;}
+  .k.action{top:19%;height:27px;} .k.volup{top:29.5%;height:44px;} .k.voldn{top:40%;height:44px;} .k.power{top:28%;height:70px;} .k.cam{top:47.5%;height:36px;width:3.5px;right:-3px;}
+  .appbar{flex:0 0 11%;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:0 15px 7px;background:#05050a;z-index:2;}
+  .legend{display:flex;gap:11px;} .legend span{display:inline-flex;align-items:center;gap:5px;font:600 9.5px/1 system-ui;color:#e9e6f2;letter-spacing:.02em;}
+  .legend i{width:7px;height:7px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.25);}
+  .rec{display:inline-flex;align-items:center;gap:5px;font:700 8px/1 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#f0b48f;}
+  .rec::before{content:"";width:6px;height:6px;border-radius:50%;background:#e2603a;box-shadow:0 0 0 3px rgba(226,96,58,.24);}
+  .vid{flex:1 1 auto;position:relative;min-height:0;} .vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#05050a;}
+  .appfoot{flex:0 0 7%;display:flex;align-items:center;justify-content:center;padding:0 14px;background:#05050a;z-index:2;}
+  .appfoot span{font:500 9px/1.2 system-ui;color:#a89fc2;text-align:center;letter-spacing:.02em;} .appfoot b{color:#efeaf6;font-weight:650;}
+  .cap-line{margin-top:1.15rem;text-align:center;font-size:.82rem;color:var(--muted);max-width:30ch;margin-inline:auto;} .cap-line b{color:var(--fg);font-weight:600;}
+
+  /* why: the ledger */
+  .why-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,5vw,64px);align-items:start;}
+  @media (max-width:820px){.why-grid{grid-template-columns:1fr;}}
+  .ledger{border-top:1px solid var(--line);margin-top:.4rem;}
+  .ledger div{display:grid;grid-template-columns:1fr auto;gap:18px;padding:18px 0;border-bottom:1px solid var(--line);align-items:baseline;}
+  .ledger b{font-family:"Fraunces",serif;font-weight:600;font-size:1.25rem;letter-spacing:-.01em;} .ledger span{color:var(--muted);font-size:.95rem;text-align:right;font-variant-numeric:tabular-nums;}
+  .ledger div:last-child b{color:var(--accent);} .ledger div:last-child span{color:var(--fg);font-weight:600;}
+
+  /* measured band */
+  .band{background:var(--field);color:var(--field-fg);border-radius:18px;padding:clamp(28px,5vw,56px);position:relative;overflow:hidden;}
+  .band::before{content:"";position:absolute;inset:0;opacity:.5;background-image:linear-gradient(rgba(239,234,246,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(239,234,246,.05) 1px,transparent 1px);background-size:26px 26px;-webkit-mask-image:radial-gradient(90% 120% at 92% 0%,#000,transparent 68%);mask-image:radial-gradient(90% 120% at 92% 0%,#000,transparent 68%);}
+  .band>*{position:relative;} .band .eyebrow{color:#c0aede;} .band h2{margin:.8rem 0 .9rem;max-width:20ch;}
+  .band .prose{color:#cfc6e2;max-width:58ch;}
+  .band .quote{font-family:"Fraunces",serif;font-style:italic;font-size:var(--step-1);color:#efeaf6;margin-top:1.4rem;padding-left:18px;border-left:3px solid var(--warm);max-width:42ch;}
+  .band .cta{margin-top:1.8rem;justify-content:flex-start;} .band .btn.ghost{border-color:var(--field-line);background:transparent;color:var(--field-fg);}
+
+  /* status: tilt cards */
+  .status{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:2.2rem;}
+  @media (max-width:760px){.status{grid-template-columns:1fr;}}
+  .scard{padding:26px 24px;border:1px solid var(--line);border-radius:16px;background:var(--surface);transform:perspective(900px) rotateX(var(--rx,0)) rotateY(var(--ry,0)) translateZ(0);transition:transform .35s var(--ease-out),box-shadow .35s;will-change:transform;}
+  .scard:hover{box-shadow:0 24px 48px -32px rgba(29,24,48,.5);}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid;}
+  .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .pill.live{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);}
+  .pill.now{color:var(--warm);border-color:color-mix(in srgb,var(--warm) 50%,transparent);}
+  .pill.next{color:var(--muted);border-color:var(--line-strong);}
+  .scard h3{font-size:1.12rem;margin:14px 0 6px;} .scard p{font-size:.95rem;color:var(--muted);}
+
+  .close{text-align:center;} .close h2{max-width:18ch;margin:0 auto .5rem;}
+  footer{border-top:1px solid var(--line);padding-block:2.4rem 3rem;}
+  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:center;color:var(--muted);font-size:.9rem;}
+  .foot .brand{font-size:1.05rem;color:var(--fg);}
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+    [data-reveal]{opacity:1;transform:none;}
+    .stage .hint,.stage .spot{display:none;}
+  }
+</style></head>
+<body>
+<a href="#main" class="skip">Skip to content</a>
+<div class="grain" aria-hidden="true"></div>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">Continuum<span class="dot">.</span></div>
+    <nav class="nav-right" aria-label="Primary">
+      <div class="navlinks"><a href="#proof">Real capture</a><a href="#why">Why</a><a href="#status">Where we are</a></div>
+      <button class="iconbtn" id="themeBtn" aria-label="Switch color theme" aria-pressed="false" title="Switch theme">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+      </button>
+      <a href="#early-access" class="btn primary"><span class="long">Request&nbsp;</span>early access <span class="arw" aria-hidden="true">&rarr;</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- THE SHOT: the page opens on the film; scrolling hands the reader the timeline -->
+  <section id="shot" class="shot is-intro" aria-labelledby="hero-h">
+    <div class="shot-sticky">
+      <div class="intro">
+        <p class="eyebrow" data-reveal>Personal AI golf caddy</p>
+        <h1 id="hero-h" class="display-xl" data-reveal style="--i:1">Every shot, <span class="ink">read off your phone.</span></h1>
+        <p class="sub" data-reveal style="--i:2">Continuum reads your swing and ball from ordinary phone video, understands your game the way a launch monitor would, then caddies for you on the course.</p>
+        <div class="cta" data-reveal style="--i:3">
+          <a href="#early-access" class="btn primary">Request early access <span class="arw" aria-hidden="true">&rarr;</span></a>
+          <button type="button" class="btn ghost" id="walkBtn">Walk through a shot</button>
+        </div>
+        <p class="micro" data-reveal style="--i:4">No $20,000 simulator. No sensors, no wearables. Just the phone in your pocket.</p>
+      </div>
+      <div class="chapters" aria-labelledby="shot-h">
+        <p class="eyebrow" id="shot-h">How it works &middot; one shot, start to finish</p>
+        <div class="rail" role="list">
+          <button class="chapter is-active" role="listitem" data-t0="0" data-t1="4.0" aria-current="step">
+            <span class="num">01 &middot; CAPTURE</span><h3>Mount the phone. Take your swing.</h3>
+            <div class="body"><div><p>On a cart strut or a stand, the phone watches from face-on. Nothing on the club, nothing to calibrate.</p>
+              <div class="chips"><span class="chip">Any recent iPhone</span><span class="chip">Face-on, 120 fps</span></div></div></div>
+          </button>
+          <button class="chapter" role="listitem" data-t0="4.0" data-t1="8.6">
+            <span class="num">02 &middot; READ</span><h3>Seventeen points and a ball, every frame.</h3>
+            <div class="body"><div><p>Computer vision follows your body through the swing and catches the ball the instant it leaves the face.</p>
+              <div class="figs"><div class="fig"><b><span class="cnt" data-to="110" data-at="6.9" data-dur="1.2">0</span><small>mph</small></b><span>Ball speed</span></div></div></div></div>
+          </button>
+          <button class="chapter" role="listitem" data-t0="8.6" data-t1="13.2">
+            <span class="num">03 &middot; ESTIMATE</span><h3>Carry, launch, apex. As a launch monitor reports it.</h3>
+            <div class="body"><div><p>From the ball in those frames we solve the flight: how far it carries, how high it goes, and where it comes down.</p>
+              <div class="figs">
+                <div class="fig"><b><span class="cnt" data-to="156" data-at="10.4" data-dur="1.4">0</span><small>yd</small></b><span>Carry</span></div>
+                <div class="fig"><b><span class="cnt" data-to="17.5" data-dec="1" data-at="10.6" data-dur="1.2">0</span><small>&deg;</small></b><span>Launch</span></div>
+                <div class="fig"><b><span class="cnt" data-to="86" data-at="11.0" data-dur="1.2">0</span><small>ft</small></b><span>Apex</span></div>
+              </div>
+              <div class="chips"><span class="chip acc">7-iron</span></div></div></div>
+          </button>
+          <button class="chapter" role="listitem" data-t0="13.2" data-t1="17.4">
+            <span class="num">04 &middot; CADDY</span><h3>Then it caddies.</h3>
+            <div class="body"><div><p>Two in three of your 7-irons land in the purple, which reaches the trees. The smart miss is short-left, in the clear, and that is where the ball came down.</p>
+              <div class="chips"><span class="chip acc">2 in 3 land here</span><span class="chip warm">Smart miss: short-left</span><span class="chip">Find your ball</span></div></div></div>
+          </button>
+        </div>
+        <div class="progress" aria-hidden="true"><i></i></div>
+      </div>
+
+      <div class="stage" id="stage" role="img" aria-label="A phone mounted on a cart strut records a golf swing; the tracked ball leaves the screen, flies a measured arc, and lands short-left of the flag inside the calculated miss, clear of the trees and rough.">
+        <picture class="poster"><source srcset="assets/how/poster.webp?v=5" type="image/webp"><img src="assets/how/poster.webp?v=5" width="1280" height="800" alt="" decoding="async"></picture>
+        <video class="film" muted playsinline loop preload="none" aria-hidden="true" disablepictureinpicture></video>
+        <canvas class="scrub" aria-hidden="true"></canvas>
+        <div class="spot" aria-hidden="true"></div>
+        <div class="loading" aria-hidden="true"></div>
+        <div class="hint" aria-hidden="true"><i></i> Scroll to scrub</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="proof" class="rule" aria-labelledby="proof-h">
+    <div class="wrap proof-grid">
+      <div data-reveal>
+        <div class="device-wrap" id="device">
+          <div class="device">
+            <span class="k left action" aria-hidden="true"></span><span class="k left volup" aria-hidden="true"></span><span class="k left voldn" aria-hidden="true"></span>
+            <span class="k right power" aria-hidden="true"></span><span class="k right cam" aria-hidden="true"></span>
+            <div class="bezel"><div class="screen">
+              <div class="appbar"><span class="legend"><span><i style="background:#9e8cb4"></i>Pose</span><span><i style="background:#dfc9ad"></i>Ball</span></span><span class="rec">Tracking</span></div>
+              <div class="vid"><video autoplay loop muted playsinline poster="../hero_tracking.jpg" aria-label="A real golf swing captured on a phone, with the full body pose skeleton and ball tracked by computer vision, and an estimated carry."><source src="../hero_tracking.mp4" type="video/mp4"></video></div>
+              <div class="appfoot"><span><b>Real capture</b> &middot; body and ball tracked frame by frame</span></div>
+              <div class="island" aria-hidden="true"></div><div class="glare" aria-hidden="true"></div>
+            </div></div>
+          </div>
+          <p class="cap-line"><b>Real capture.</b> Body and ball read from ordinary phone video.</p>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow" data-reveal>Real capture</p>
+        <h2 id="proof-h" class="display-l" data-reveal style="--i:1">The film is a diagram. This is the data.</h2>
+        <p class="prose" data-reveal style="--i:2" style="margin-top:1rem">Everything the film draws comes from footage like this: a phone on a range, a real swing, and the tracking that runs on it.</p>
+        <div class="facts">
+          <div class="fact" data-reveal style="--i:2"><span class="n">1</span><div><h3>A real range session</h3><p>Shot on an iPhone, face-on, no markers on the golfer or the club.</p></div></div>
+          <div class="fact" data-reveal style="--i:3"><span class="n">2</span><div><h3>Body and ball, frame by frame</h3><p>Seventeen body points and the ball, tracked through the whole swing at 120 frames a second.</p></div></div>
+          <div class="fact" data-reveal style="--i:4"><span class="n">3</span><div><h3>The instant the ball leaves</h3><p>Impact is found from the ball's own departure, so the estimate starts from the frames that matter.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why" class="rule" aria-labelledby="why-h">
+    <div class="wrap why-grid">
+      <div>
+        <p class="eyebrow" data-reveal>Why it matters</p>
+        <h2 id="why-h" class="display-l" data-reveal style="--i:1">The numbers that tell you how you really hit the ball have always been expensive. The judgment of a caddy who knows your game, scarce. Your phone can be both.</h2>
+      </div>
+      <div data-reveal style="--i:2">
+        <div class="ledger">
+          <div><b>A launch monitor</b><span>Thousands of dollars, lives at the range</span></div>
+          <div><b>A caddy</b><span>Walks beside a lucky few</span></div>
+          <div><b>Your phone</b><span>Already in your pocket</span></div>
+        </div>
+        <p class="prose" style="margin-top:1.2rem">Continuum reads both from the device every golfer already carries, so a smarter round does not require a simulator bay or a tour bag.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="honest" aria-labelledby="honest-h" style="padding-top:0">
+    <div class="wrap"><div class="band" data-reveal>
+      <p class="eyebrow">Measured, not claimed</p>
+      <h2 id="honest-h" class="display-m">We say estimate until the data earns measure.</h2>
+      <p class="prose">Phone-only shot reading is hard, and plenty of apps quote numbers they cannot back up. We do the opposite: every estimate is validated against a real launch monitor by capturing the same shots both ways, so the accuracy we show is earned. Where the physics has a ceiling, we say so. Spin is read as tendency and axis, never invented as an exact rpm. The caddy works the same way: it shows its reasoning, not just a number.</p>
+      <p class="quote">Be the caddy golfers actually trust, and do not claim we are there until the numbers back it up.</p>
+      <div class="cta"><a href="#early-access" class="btn ghost">Request early access <span class="arw" aria-hidden="true">&rarr;</span></a></div>
+    </div></div>
+  </section>
+
+  <section id="status" class="rule" aria-labelledby="status-h">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow" data-reveal>Where we are</p><h2 id="status-h" class="display-l" data-reveal style="--i:1">An honest read on the build.</h2></div>
+      <div class="status" id="tilt">
+        <div class="scard" data-reveal style="--i:1"><span class="pill live">Working</span><h3>Perception on real footage</h3><p>Body and ball tracked on captured range sessions, catching where the ball leaves the face.</p></div>
+        <div class="scard" data-reveal style="--i:2"><span class="pill now">In validation</span><h3>Outcome estimation</h3><p>We are capturing shots on a phone and a launch monitor at once, to measure exactly how close the phone-only estimate gets.</p></div>
+        <div class="scard" data-reveal style="--i:3"><span class="pill next">Next</span><h3>Your on-course caddy</h3><p>Turning your shot history into club and strategy advice tuned to how you play, and helping you find your ball from the cart.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="early-access" class="close" aria-labelledby="close-h" style="padding-top:0">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>Early access</p>
+      <h2 id="close-h" class="display-l" data-reveal style="--i:1">The caddy in your pocket is almost here.</h2>
+      <div class="cta" data-reveal style="--i:2"><a href="#early-access" class="btn primary">Request early access <span class="arw" aria-hidden="true">&rarr;</span></a></div>
+      <p class="micro" data-reveal style="--i:3">We are onboarding a first group of golfers to capture, validate against real launch monitors, and shape the on-course caddy.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div><span class="brand">Continuum<span class="dot">.</span></span> &nbsp; A personal AI golf caddy, read from your phone.</div>
+    <div class="muted">Honest estimation today, measurement as the data earns it.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var root=document.documentElement, rmq=matchMedia('(prefers-reduced-motion: reduce)');
+  var BASE='assets/how/', V='?v=5', FILM_S=17.4, FPS=30, SEQ_STEP=3, SEQ_N=175;
+  /* scrub timeline: film 0-16.4 s (stop on the landing hold, before the loop's fade), skipping the wide->landing dip (12.8-13.63 s) */
+  var SCRUB=[]; for(var q=0;q<=164;q++){ if(q>=129&&q<=136) continue; SCRUB.push(q); }
+
+  /* theme */
+  var btn=document.getElementById('themeBtn');
+  function cur(){return root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+  btn.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';
+    var go=function(){root.dataset.theme=n;btn.setAttribute('aria-pressed',n==='dark');};
+    if(document.startViewTransition&&!rmq.matches){document.startViewTransition(go);}else{go();}});
+
+  /* reveal */
+  var items=document.querySelectorAll('[data-reveal]');
+  if(rmq.matches||!('IntersectionObserver' in window)){items.forEach(function(el){el.classList.add('in');});}
+  else{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{rootMargin:'0px 0px -8% 0px',threshold:.12});
+    items.forEach(function(el){io.observe(el);});}
+
+  /* the shot */
+  var shot=document.getElementById('shot'), sticky=shot.querySelector('.shot-sticky'), stage=document.getElementById('stage');
+  var video=stage.querySelector('video.film'), canvas=stage.querySelector('canvas.scrub'), ctx=canvas.getContext('2d');
+  var chapters=Array.prototype.slice.call(shot.querySelectorAll('.chapter')), progress=shot.querySelector('.progress');
+  var counters=Array.prototype.slice.call(shot.querySelectorAll('.cnt'));
+  var fine=matchMedia('(pointer: fine)').matches, wide=matchMedia('(min-width: 901px)').matches;
+  var PIN=fine&&wide&&!rmq.matches&&!!ctx;
+  if(PIN) shot.classList.add('is-pinned');
+
+  function isSafari(){var u=navigator.userAgent;return /Safari/.test(u)&&!/Chrome|Chromium|Edg|OPR|Android/.test(u);}
+  function themeName(){return cur();}
+  function tier(){return (innerWidth<900)?'small_2x':'large_2x';}
+  function srcFor(){return BASE+tier()+(isSafari()?'.mov':'.webm')+V;}
+  var usedFallback=false;
+  function loadVideo(){
+    video.src=srcFor(); video.load();
+    video.addEventListener('error',function(){ if(usedFallback) return; usedFallback=true; video.src=BASE+'fallback_'+themeName()+'.mp4'+V; video.load(); tryPlay(); },{once:true});
+  }
+  function tryPlay(){ var p=video.play(); if(p&&p.catch) p.catch(function(){}); }
+
+  /* chapters + counters, driven by film time */
+  var ease=function(u){u=Math.min(1,Math.max(0,u));return 1-Math.pow(1-u,3);};
+  var activeIdx=-1;
+  function setTime(t){
+    var idx=0; for(var i=0;i<chapters.length;i++){ if(t>=parseFloat(chapters[i].dataset.t0)) idx=i; }
+    if(idx!==activeIdx){ activeIdx=idx; chapters.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); }); }
+    counters.forEach(function(c){ var at=parseFloat(c.dataset.at), dur=parseFloat(c.dataset.dur)||1, to=parseFloat(c.dataset.to), dec=parseInt(c.dataset.dec||'0',10);
+      var v=to*ease((t-at)/dur); if(t<at) v=0; c.textContent=v.toFixed(dec); });
+    progress.style.setProperty('--p',(t/FILM_S).toFixed(4));
+  }
+
+  /* video clock (autoplay mode) */
+  var clockRaf=0;
+  function clock(){ if(stage.classList.contains('mode-video')&&!video.paused){ setTime(video.currentTime%FILM_S); } clockRaf=requestAnimationFrame(clock); }
+
+  /* scrub engine (pinned mode) */
+  var frames=new Array(SEQ_N), loaded=0, loading=false, target=0, shown=-1, cur_f=0, raf=0, size={w:0,h:0,dpr:1};
+  function fit(){ var r=stage.getBoundingClientRect(); var dpr=Math.min(2,devicePixelRatio||1);
+    if(r.width!==size.w||r.height!==size.h||dpr!==size.dpr){ size={w:r.width,h:r.height,dpr:dpr}; canvas.width=Math.round(r.width*dpr); canvas.height=Math.round(r.height*dpr); shown=-1; } }
+  function draw(i){ var im=frames[i]; if(!im||!im.complete||!im.naturalWidth){ /* nearest loaded */ var d=1; while(d<SEQ_N){ if(frames[i-d]&&frames[i-d].complete){im=frames[i-d];break;} if(frames[i+d]&&frames[i+d].complete){im=frames[i+d];break;} d++; } }
+    if(!im) return; fit(); if(shown===i) return; shown=i;
+    ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(im,0,0,canvas.width,canvas.height); }
+  function loadSeq(){ if(loading) return; loading=true; stage.classList.add('is-loading'); var next=0, inflight=0, MAXC=6;
+    function pump(){ while(inflight<MAXC&&next<SEQ_N){ (function(k){ var im=new Image(); im.decoding='async'; inflight++;
+        im.onload=im.onerror=function(){ inflight--; loaded++; stage.querySelector('.loading').style.setProperty('--p',(loaded/SEQ_N).toFixed(3)); if(loaded>=SEQ_N) stage.classList.remove('is-loading'); if(Math.abs(k-target)<2) tick(); pump(); };
+        im.src=BASE+'seq/s_'+('00'+k).slice(-3)+'.webp'+V; frames[k]=im; })(next++); } }
+    pump(); }
+  function tick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(step); }
+  function step(){ var d=target-cur_f; if(Math.abs(d)<.02){ cur_f=target; } else { cur_f+=d*.16; raf=requestAnimationFrame(step); }
+    var i=SCRUB[Math.max(0,Math.min(SCRUB.length-1,Math.round(cur_f)))]; draw(i); setTime(i*SEQ_STEP/FPS); }
+
+  var mode='';
+  function setMode(m){ if(mode===m) return; mode=m; stage.classList.remove('mode-video','mode-scrub'); stage.classList.add('mode-'+m);
+    if(m==='video'){ if(!video.src) loadVideo(); tryPlay(); } else { video.pause(); } }
+
+  function onScroll(){
+    var top=shot.getBoundingClientRect().top+scrollY, dist=shot.offsetHeight-sticky.offsetHeight;
+    if(!(dist>0)){ setMode('video'); return; }
+    var p=(scrollY-top)/dist; if(p<0)p=0; if(p>1)p=1;
+    shot.classList.toggle('is-intro',p<=0.002);
+    if(p<=0.002){ setMode('video'); return; }
+    setMode('scrub'); target=p*(SCRUB.length-1); tick();
+  }
+  var walk=document.getElementById('walkBtn');
+  walk.addEventListener('click',function(){ var top=shot.getBoundingClientRect().top+scrollY, dist=shot.offsetHeight-sticky.offsetHeight;
+    if(PIN&&dist>0){ scrollTo({top:top+dist*0.06,behavior:rmq.matches?'auto':'smooth'}); } else { chapters[0].scrollIntoView({behavior:rmq.matches?'auto':'smooth',block:'start'}); } });
+  var wantVideo=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ if(!video.src) loadVideo(); if(!PIN){ setMode('video'); } else if(mode!=='scrub'){ setMode('video'); } } else { video.pause(); } });},{rootMargin:'120% 0px'});
+  wantVideo.observe(stage);
+  if(PIN){
+    var wantSeq=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ loadSeq(); wantSeq.disconnect(); } });},{rootMargin:'150% 0px'});
+    wantSeq.observe(shot);
+    addEventListener('scroll',onScroll,{passive:true}); addEventListener('resize',function(){fit();shown=-1;onScroll();});
+    chapters.forEach(function(c){ c.addEventListener('click',function(){ var t0=parseFloat(c.dataset.t0)+.05, top=shot.getBoundingClientRect().top+scrollY, dist=shot.offsetHeight-sticky.offsetHeight;
+      var q=Math.round(t0*FPS/SEQ_STEP), k=0; for(var j=0;j<SCRUB.length;j++){ if(SCRUB[j]<=q) k=j; }
+      scrollTo({top:top+dist*(k/(SCRUB.length-1))+1,behavior:rmq.matches?'auto':'smooth'}); }); });
+    onScroll();
+  } else {
+    chapters.forEach(function(c){ c.addEventListener('click',function(){ if(video.src){ video.currentTime=parseFloat(c.dataset.t0)+.05; tryPlay(); } setTime(parseFloat(c.dataset.t0)+.05); }); });
+  }
+  clockRaf=requestAnimationFrame(clock);
+  setTime(0);
+
+  /* pointer spotlight on the stage */
+  if(fine){ stage.addEventListener('pointermove',function(e){ var r=stage.getBoundingClientRect(); stage.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%'); stage.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%'); }); }
+
+  /* tilt cards + device */
+  function tilt(el,max){ if(!fine||rmq.matches) return; el.addEventListener('pointermove',function(e){ var r=el.getBoundingClientRect(); var x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      el.style.setProperty('--ry',(x*max).toFixed(2)+'deg'); el.style.setProperty('--rx',(-y*max).toFixed(2)+'deg'); });
+    el.addEventListener('pointerleave',function(){ el.style.setProperty('--ry','0deg'); el.style.setProperty('--rx','0deg'); }); }
+  document.querySelectorAll('.scard').forEach(function(c){tilt(c,6);});
+  var dev=document.querySelector('#device .device'); if(dev) tilt(dev,5);
+
+  /* test hook (headless checks): window.__shot.go(frameIndex) */
+  window.__shot={setTime:setTime,setMode:setMode,load:loadSeq,go:function(k){ setMode('scrub'); target=k; cur_f=k; step(); }};
+})();
+</script>
+</body></html>
