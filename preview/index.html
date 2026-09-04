@@ -165,7 +165,9 @@
   .film::before{content:"";position:absolute;left:5%;right:5%;bottom:3%;height:34%;z-index:0;pointer-events:none;
     background:radial-gradient(58% 100% at 50% 100%,color-mix(in srgb,var(--fg) 9%,transparent),transparent 72%);}
   .film-stage{position:relative;z-index:1;width:100%;aspect-ratio:8/5;border-radius:var(--radius);overflow:hidden;}
-  .film-poster{position:absolute;inset:0;z-index:1;display:block;}
+  .film-poster{position:absolute;inset:0;z-index:1;display:block;transition:opacity .35s var(--ease-out);}
+  /* the film and the stills are transparent: the poster must leave once they show, or it bleeds through them */
+  .film.is-playing .film-poster,.film.is-stills .film-poster{opacity:0;}
   .film-poster img{width:100%;height:100%;object-fit:contain;display:block;}
   /* reduced-motion still sequence: two pseudo layers cross-dissolved over .2s (motion.md) */
   .film-stage::before,.film-stage::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
