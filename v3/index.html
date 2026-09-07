@@ -66,7 +66,7 @@
 
   /* THE SHOT */
   .shot{position:relative;}
-  .shot.is-pinned{height:330vh;}
+  .shot.is-pinned{height:370vh;}
   .shot-sticky{position:sticky;top:var(--nav);height:calc(100dvh - var(--nav));display:grid;grid-template-columns:minmax(290px,.37fr) 1fr;grid-template-areas:"col stage";gap:clamp(22px,3.2vw,56px);align-items:center;max-width:1520px;margin:0 auto;padding-inline:clamp(20px,4vw,44px);}
   .intro,.chapters{grid-area:col;transition:opacity .45s var(--ease-out),transform .45s var(--ease-out);}
   .stagewrap{grid-area:stage;min-width:0;}
@@ -114,13 +114,13 @@
   .stage.is-loading .loading{opacity:1;}
 
   /* telemetry */
-  .tele{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin-top:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .tele{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;margin-top:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
   .tele div{padding:10px 10px 9px;border-right:1px solid var(--line);min-width:0;}
   .tele div:last-child{border-right:0;}
   .tele span{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
   .tele b{display:block;font-family:var(--mono);font-weight:500;font-size:clamp(.82rem,.7rem + .4vw,1.02rem);color:var(--fg);margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .tele b.off{color:var(--dim);} .tele b small{font-size:.66em;color:var(--muted);margin-left:3px;}
-  @media (max-width:640px){.tele{grid-template-columns:repeat(3,1fr);} .tele div:nth-child(3){border-right:0;} .tele div:nth-child(-n+3){border-bottom:1px solid var(--line);}}
+  @media (max-width:640px){.tele{grid-template-columns:repeat(4,1fr);} .tele div:nth-child(4){border-right:0;} .tele div:nth-child(-n+4){border-bottom:1px solid var(--line);}}
   /* ruler */
   .ruler{position:relative;height:38px;margin-top:10px;}
   .ruler .ticks{position:absolute;inset:0 0 auto 0;height:10px;background-image:linear-gradient(90deg,var(--line-2) 1px,transparent 1px);background-size:calc(100% / 17.4) 100%;}
@@ -145,7 +145,8 @@
   .figs{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:10px;}
   .fig b{display:block;font-family:var(--mono);font-weight:500;font-size:1.25rem;letter-spacing:-.01em;line-height:1;color:var(--fg);font-variant-numeric:tabular-nums;}
   .fig b small{font-size:.7rem;color:var(--muted);margin-left:2px;}
-  .fig span{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:4px;}
+  .fig>span{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:4px;}
+  @media (max-height:840px){.chapter{padding:7px 0 7px 20px;} .chapter h3{font-size:clamp(.95rem,.85rem + .4vw,1.1rem);margin-top:3px;} .chapter p{font-size:.84rem;margin-top:5px;} .figs{margin-top:7px;} .chips{margin-top:7px;} .fig b{font-size:1.1rem;}}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
   .chip{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:3px;border:1px solid var(--line-2);color:var(--muted);opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease-out),transform .35s var(--ease-out);}
   .chip.warm{color:var(--warm);border-color:rgba(232,147,90,.45);} .chip.acc{color:var(--accent);border-color:rgba(143,127,247,.5);}
@@ -258,10 +259,10 @@
         <div class="rail" role="list">
           <button class="chapter is-active" role="listitem" data-t0="0" data-t1="5.8" aria-current="step">
             <span class="num"><b>01</b>Capture</span><h3>Mount the phone. Take your swing.</h3>
-            <div class="body"><div><p>On a cart strut or a stand, the phone watches from face-on. Nothing on the club, nothing to calibrate.</p>
+            <div class="body"><div><p>Clamped to the cart, the phone watches from face-on. Nothing on the club, nothing to calibrate.</p>
               <div class="chips"><span class="chip">Any recent iPhone</span><span class="chip">Face-on &middot; 120 fps</span></div></div></div>
           </button>
-          <button class="chapter" role="listitem" data-t0="5.8" data-t1="8.6">
+          <button class="chapter" role="listitem" data-t0="5.8" data-t1="8.8">
             <span class="num"><b>02</b>Read</span><h3>Seventeen points and a ball, every frame.</h3>
             <div class="body"><div><p>Computer vision follows your body through the swing and catches the ball the instant it leaves the face.</p>
               <div class="figs">
@@ -270,21 +271,30 @@
                 <div class="fig"><b><span class="cnt" data-to="25" data-at="7.0" data-dur="1.0">0</span></b><span>Ball frames</span></div>
               </div></div></div>
           </button>
-          <button class="chapter" role="listitem" data-t0="8.6" data-t1="13.2">
+          <button class="chapter" role="listitem" data-t0="8.8" data-t1="13.2">
             <span class="num"><b>03</b>Estimate</span><h3>Carry, launch, apex. As a launch monitor reports it.</h3>
             <div class="body"><div><p>From the ball in those frames we solve the flight: how fast it left, how far it carries, how high it goes.</p>
               <div class="figs">
-                <div class="fig"><b><span class="cnt" data-to="110" data-at="9.2" data-dur="1.2">0</span><small>mph</small></b><span>Ball speed</span></div>
-                <div class="fig"><b><span class="cnt" data-to="156" data-at="10.4" data-dur="1.4">0</span><small>yd</small></b><span>Carry</span></div>
-                <div class="fig"><b><span class="cnt" data-to="17.5" data-dec="1" data-at="10.6" data-dur="1.2">0</span><small>&deg;</small></b><span>Launch</span></div>
-                <div class="fig"><b><span class="cnt" data-to="86" data-at="11.0" data-dur="1.2">0</span><small>ft</small></b><span>Apex</span></div>
+                <div class="fig"><b><span class="cnt" data-to="110" data-at="9.4" data-dur="1.2">0</span><small>mph</small></b><span>Ball speed</span></div>
+                <div class="fig"><b><span class="cnt" data-to="156" data-at="10.6" data-dur="1.4">0</span><small>yd</small></b><span>Carry</span></div>
+                <div class="fig"><b><span class="cnt" data-to="17.5" data-dec="1" data-at="10.8" data-dur="1.2">0</span><small>&deg;</small></b><span>Launch</span></div>
+                <div class="fig"><b><span class="cnt" data-to="86" data-at="11.2" data-dur="1.2">0</span><small>ft</small></b><span>Apex</span></div>
               </div>
               <div class="chips"><span class="chip acc">7-iron</span></div></div></div>
           </button>
-          <button class="chapter" role="listitem" data-t0="13.2" data-t1="17.4">
+          <button class="chapter" role="listitem" data-t0="13.2" data-t1="15.2">
             <span class="num"><b>04</b>Caddy</span><h3>Then it caddies.</h3>
             <div class="body"><div><p>Two in three of your 7-irons land in the purple, which reaches the trees. The smart miss is short-left, in the clear, and that is where the ball came down.</p>
-              <div class="chips"><span class="chip acc">2 in 3 land here</span><span class="chip warm">Smart miss: short-left</span><span class="chip">Find your ball</span></div></div></div>
+              <div class="chips"><span class="chip acc">2 in 3 land here</span><span class="chip warm">Smart miss: short-left</span></div></div></div>
+          </button>
+          <button class="chapter" role="listitem" data-t0="15.2" data-t1="19.6">
+            <span class="num"><b>05</b>Find</span><h3>Walk straight to the ball.</h3>
+            <div class="body"><div><p>The estimate that placed the smart miss becomes the search zone. As you walk up, the phone scans it, locks onto the ball and drops a marker, so the round keeps moving.</p>
+              <div class="figs">
+                <div class="fig"><b><span class="cnt" data-to="170" data-at="15.3" data-dur="1.0">0</span><small>m&sup2;</small></b><span>Search zone</span></div>
+                <div class="fig"><b><span class="cnt" data-to="18" data-at="16.2" data-dur="0.8">0</span><small>yd</small></b><span>To the pin</span></div>
+              </div>
+              <div class="chips"><span class="chip warm">Ball found</span><span class="chip">No combing the rough</span></div></div></div>
           </button>
         </div>
       </div>
@@ -293,8 +303,8 @@
         <div class="frame">
           <span class="c tl" aria-hidden="true"></span><span class="c tr" aria-hidden="true"></span><span class="c bl" aria-hidden="true"></span><span class="c br" aria-hidden="true"></span>
           <div class="strip" aria-hidden="true"><span class="rec"><i></i>Rec</span><span><b>4K</b> &middot; <b>120 fps</b> &middot; face-on</span><span>sess-01 / shot-063</span></div>
-          <div class="stage" id="stage" role="img" aria-label="A phone mounted on a cart strut records a golf swing; the tracked ball leaves the screen, flies a measured arc, and lands short-left of the flag inside the calculated miss, clear of the trees and rough.">
-            <picture class="poster"><source srcset="assets/how/poster.webp?v=5" type="image/webp"><img src="assets/how/poster.webp?v=5" width="1280" height="800" alt="" decoding="async"></picture>
+          <div class="stage" id="stage" role="img" aria-label="A phone clamped to a golf cart records a golf swing; the tracked ball leaves the screen, flies a measured arc, and lands short-left of the flag inside the calculated miss, clear of the trees and rough; then the phone scans the landing zone and locks onto the ball.">
+            <picture class="poster"><source srcset="assets/how/poster.webp?v=6" type="image/webp"><img src="assets/how/poster.webp?v=6" width="1280" height="800" alt="" decoding="async"></picture>
             <video class="film" muted playsinline loop preload="none" aria-hidden="true" disablepictureinpicture></video>
             <canvas class="scrub" aria-hidden="true"></canvas>
             <div class="loading" aria-hidden="true"></div>
@@ -302,19 +312,21 @@
           </div>
           <div class="tele" aria-hidden="true">
             <div><span>Time</span><b id="tTime">T+00.00<small>s</small></b></div>
-            <div><span>Frame</span><b id="tFrame">000<small>/522</small></b></div>
-            <div><span>Ball speed</span><b class="off" data-tele="110" data-unit="mph" data-at="9.2" data-dur="1.2">&ndash;&ndash;</b></div>
-            <div><span>Carry</span><b class="off" data-tele="156" data-unit="yd" data-at="10.4" data-dur="1.4">&ndash;&ndash;</b></div>
-            <div><span>Launch</span><b class="off" data-tele="17.5" data-dec="1" data-unit="&deg;" data-at="10.6" data-dur="1.2">&ndash;&ndash;</b></div>
+            <div><span>Frame</span><b id="tFrame">000<small>/588</small></b></div>
+            <div><span>Ball speed</span><b class="off" data-tele="110" data-unit="mph" data-at="9.4" data-dur="1.2">&ndash;&ndash;</b></div>
+            <div><span>Carry</span><b class="off" data-tele="156" data-unit="yd" data-at="10.6" data-dur="1.4">&ndash;&ndash;</b></div>
+            <div><span>Launch</span><b class="off" data-tele="17.5" data-dec="1" data-unit="&deg;" data-at="10.8" data-dur="1.2">&ndash;&ndash;</b></div>
             <div><span>Landing</span><b class="off" data-tele-text="2 in 3" data-at="13.8">&ndash;&ndash;</b></div>
+            <div><span>Ball</span><b class="off" data-tele-text="Found" data-at="16.1">&ndash;&ndash;</b></div>
           </div>
           <div class="ruler" aria-hidden="true">
             <div class="ticks"></div>
             <div class="segs">
               <div class="seg is-active" style="flex:5.8" data-t="0">01 Capture</div>
-              <div class="seg" style="flex:2.8" data-t="5.8">02 Read</div>
-              <div class="seg" style="flex:4.6" data-t="8.6">03 Estimate</div>
-              <div class="seg" style="flex:4.2" data-t="13.2">04 Caddy</div>
+              <div class="seg" style="flex:3.0" data-t="5.8">02 Read</div>
+              <div class="seg" style="flex:4.4" data-t="8.8">03 Estimate</div>
+              <div class="seg" style="flex:2.0" data-t="13.2">04 Caddy</div>
+              <div class="seg" style="flex:4.4" data-t="15.2">05 Find</div>
             </div>
             <div class="head"></div>
           </div>
@@ -422,8 +434,8 @@
 (function(){
   'use strict';
   var rmq=matchMedia('(prefers-reduced-motion: reduce)');
-  var BASE='assets/how/', V='?v=5', FILM_S=17.4, FPS=30, SEQ_STEP=3, SEQ_N=175, FILM_FRAMES=522;
-  var SCRUB=[]; for(var q=0;q<=164;q++){ if(q>=129&&q<=136) continue; SCRUB.push(q); }
+  var BASE='assets/how/', V='?v=6', FILM_S=19.6, FPS=30, SEQ_STEP=3, SEQ_N=196, FILM_FRAMES=588;
+  var SCRUB=[]; for(var q=0;q<=185;q++){ if(q>=129&&q<=136) continue; SCRUB.push(q); }
 
   var items=document.querySelectorAll('[data-reveal]');
   if(rmq.matches||!('IntersectionObserver' in window)){items.forEach(function(el){el.classList.add('in');});}
@@ -455,7 +467,7 @@
     if(idx!==activeIdx){ activeIdx=idx;
       chapters.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); });
       segs.forEach(function(s,k){ s.classList.toggle('is-active',k===idx); });
-      if(rmq.matches) setStill([0,2,3,4][idx]); }
+      if(rmq.matches) setStill([0,2,3,4,5][idx]); }
     counters.forEach(function(c){ var at=parseFloat(c.dataset.at), dur=parseFloat(c.dataset.dur)||1, to=parseFloat(c.dataset.to), dec=parseInt(c.dataset.dec||'0',10);
       var v=to*ease((t-at)/dur); if(t<at) v=0; c.textContent=v.toFixed(dec); });
     teles.forEach(function(b){ var at=parseFloat(b.dataset.at);
