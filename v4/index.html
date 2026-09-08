@@ -301,7 +301,7 @@
 <script>
 (function(){
   'use strict';
-  var FILM={S:19.6,FRAMES:588,SEQ_N:196,SEQ_STEP:3,QMAX:185,SKIP:[[129,136]],V:'?v=7'};   // one object: bump together when the film changes
+  var FILM={S:22.4,FRAMES:672,SEQ_N:224,SEQ_STEP:3,QMAX:213,SKIP:[[129,136],[150,154],[162,166],[180,184]],V:'?v=8'};   // one object: bump together when the film changes
   var BASE='../v3/assets/how/', FPS=30;
   var SCRUB=[]; for(var q=0;q<=FILM.QMAX;q++){ var skip=false; for(var s=0;s<FILM.SKIP.length;s++){ if(q>=FILM.SKIP[s][0]&&q<=FILM.SKIP[s][1]) skip=true; } if(!skip) SCRUB.push(q); }
   var rmq=matchMedia('(prefers-reduced-motion: reduce)');
