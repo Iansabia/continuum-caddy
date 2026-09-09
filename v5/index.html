@@ -112,7 +112,7 @@
   .psticky{display:flex;flex-direction:column;align-items:center;padding:96px var(--gut) 28px;}
   .proof.is-pinned .psticky{position:sticky;top:0;height:100vh;height:100svh;padding-top:84px;overflow:hidden;}
   .proof .sub{margin:16px auto 0;}
-  .iphone{--ph:clamp(420px,calc(100svh - 330px),780px);position:relative;height:var(--ph);aspect-ratio:78/163.4;margin-top:clamp(22px,3svh,40px);border-radius:17%/8.1%;
+  .iphone{--ph:clamp(360px,calc(100svh - 330px),780px);position:relative;height:var(--ph);aspect-ratio:78/163.4;margin-top:clamp(22px,3svh,40px);border-radius:17%/8.1%;
     background:linear-gradient(135deg,#f6a35c 0%,#e77a2c 42%,#c95c16 100%);
     box-shadow:inset 0 0 0 1.5px rgba(255,235,215,.55),inset 0 0 0 5px #d8691e,inset 0 0 0 6.5px rgba(20,8,0,.45),0 50px 90px -34px rgba(0,0,0,.6),0 12px 28px -14px rgba(0,0,0,.35);}
   .proof:not(.is-pinned) .iphone{--ph:min(70svh,640px);}
@@ -277,11 +277,13 @@
     function drawAt(x){ var i0=Math.floor(x), t=x-i0, i1=Math.min(i0+1,o.list.length-1); var A=near(o.list[i0]), B=(t>0.04&&i1!==i0)?near(o.list[i1]):null; if(!A) return; fit();
       if(B===A) B=null; var k=i0+':'+(B?Math.round(t*12):0); if(k===shownKey) return; shownKey=k;
       ctx.clearRect(0,0,o.W,o.H); ctx.drawImage(A,0,0,o.W,o.H); if(B){ ctx.globalAlpha=t; ctx.drawImage(B,0,0,o.W,o.H); ctx.globalAlpha=1; } }
-    function load(){ wanted=true; if(loading||loadedN>=o.n) return; loading=true; o.stage.classList.add('is-loading'); var next=0, inflight=0, MAXC=6, gen=fr;
-      function pump(){ while(inflight<MAXC&&next<o.n){ (function(j){ var im=new Image(); im.decoding='async'; inflight++;
+    function load(){ wanted=true; if(loading||loadedN>=o.n) return; loading=true; o.stage.classList.add('is-loading'); var inflight=0, MAXC=6, gen=fr, k=0, order=[];
+      var c=o.list[Math.round(Math.max(0,Math.min(o.list.length-1,cur)))];          // load outward from where the reader is, so a theme switch or a fast scroll shows the right frame first
+      for(var d=0;d<o.n;d++){ if(c+d<o.n) order.push(c+d); if(d>0&&c-d>=0) order.push(c-d); }
+      function pump(){ while(inflight<MAXC&&k<order.length){ (function(j){ var im=new Image(); im.decoding='async'; inflight++;
           im.onload=im.onerror=function(){ inflight--; if(gen!==fr) return; loadedN++; if(bar) bar.style.setProperty('--p',(loadedN/o.n).toFixed(3)); if(loadedN>=o.n){ o.stage.classList.remove('is-loading'); loading=false; }
             if(Math.abs(j-o.list[Math.round(Math.max(0,Math.min(o.list.length-1,cur)))])<3){ shownKey=''; tick(); } pump(); };
-          im.src=o.url(j); gen[j]=im; })(next++); } }
+          im.src=o.url(j); gen[j]=im; })(order[k++]); } }
       pump(); }
     function tick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(step); }
     function step(){ var d=target-cur; if(Math.abs(d)<.01){ cur=target; } else { cur+=(Math.abs(d)>20)?d*.5:d*.18; raf=requestAnimationFrame(step); }
