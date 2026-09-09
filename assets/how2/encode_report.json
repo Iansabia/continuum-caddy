@@ -1,0 +1,42 @@
+{
+ "small_2x": {
+  "mov_bytes": 1972059,
+  "webm_bytes": 2099639,
+  "mov_per_frame": 2934.6116071428573,
+  "webm_per_frame": 3124.4627976190477,
+  "mov_total_est_MB": 1.9720590000000002,
+  "webm_total_est_MB": 2.099639,
+  "alpha_mov": [
+   0.1618641975308642,
+   0.5424629629629629
+  ],
+  "alpha_webm": [
+   0.16367592592592592,
+   0.5269969135802469
+  ],
+  "tag": "hvc1,720,450",
+  "gate": "PASS"
+ },
+ "large_2x": {
+  "mov_bytes": 5337878,
+  "webm_bytes": 4433785,
+  "mov_per_frame": 7943.270833333333,
+  "webm_per_frame": 6597.894345238095,
+  "mov_total_est_MB": 5.337878,
+  "webm_total_est_MB": 4.433785,
+  "alpha_mov": [
+   0.16244515306122448,
+   0.5277308673469387
+  ],
+  "alpha_webm": [
+   0.16658035714285716,
+   0.5177015306122449
+  ],
+  "tag": "hvc1,1120,700",
+  "gate": "PASS"
+ },
+ "fallback_dark": {
+  "bytes": 438188,
+  "total_est_MB": 0.438188
+ }
+}
