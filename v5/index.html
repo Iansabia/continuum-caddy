@@ -63,7 +63,7 @@
   .sticky{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:84px var(--gut) 16px;overflow:hidden;}
   .shot:not(.is-pinned) .sticky{position:static;height:auto;padding-top:112px;padding-bottom:0;}
   .stagewrap{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
-  .stage{position:absolute;inset:0;width:100%;height:100%;transform:scale(var(--fs,1.08)) translateY(var(--fy,0%));transform-origin:50% 50%;transition:transform .9s var(--ease);will-change:transform;}
+  .stage{position:absolute;inset:0;width:100%;height:100%;transform:scale(var(--fs,1.1)) translateY(var(--fy,0%));transform-origin:50% 50%;transition:transform .9s var(--ease);will-change:transform;}
   .shot.is-intro .stage{--fs:1.15;--fy:27%;}                /* the intro: a touch bigger and lower, under the claim; the side edges sit off-screen */
   .stage .poster,.stage canvas,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block;}
   .stage .poster{z-index:1;transition:opacity .35s var(--ease);} .stage .poster img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .2s;}
@@ -249,7 +249,7 @@
 <script>
 (function(){
   'use strict';
-  var FILM={S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=12'};   // one object: bump together when the film changes
+  var FILM={S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=13'};   // one object: bump together when the film changes
   var APP={SEQ_N:165,STEP:2,V:'?v=2'};                                                                          // the app-screen bake, frames 0-329 every 2nd
   var ROOT_BASE='../assets/how2/', FPS=30;
   var SCRUB=[]; for(var q=0;q<=FILM.QMAX;q++){ var skip=false; for(var s=0;s<FILM.SKIP.length;s++){ if(q>=FILM.SKIP[s][0]&&q<=FILM.SKIP[s][1]) skip=true; } if(!skip) SCRUB.push(q); }
