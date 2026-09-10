@@ -87,7 +87,7 @@
   .claim::before{content:"";position:absolute;left:-12vw;right:-12vw;top:-120px;bottom:-60px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,var(--bg) 30%,transparent 70%);transition:opacity .35s;}   /* a soft pool of the page ground under the claim so the type reads over the film without an edge */
   .shot.is-pinned:not(.is-intro) .claim::before{opacity:0;}
   .shot.is-pinned:not(.is-intro) .claim{grid-template-rows:0fr;opacity:0;pointer-events:none;}
-  .claim h1{margin:0 auto;max-width:14ch;}
+  .claim h1{margin:0 auto;max-width:17ch;}
   /* the outro: as the film dissolves out (--fo -> 0) the next headline dissolves in, centred, so there is no empty ground to scroll through */
   .outro{position:absolute;inset:0;z-index:3;display:grid;place-items:center;text-align:center;padding:0 var(--gut);pointer-events:none;opacity:calc(1 - var(--fo,1));transform:translateY(calc(var(--fo,1) * 28px));}
   .outro h2{margin:0 auto;max-width:14ch;} .outro .sub{margin:18px auto 0;text-align:center;}
@@ -209,7 +209,7 @@
   <section id="top" class="shot is-intro" aria-labelledby="hero-h">
     <div class="sticky">
       <div class="claim"><div>
-        <div class="rise"><h1 id="hero-h">Your caddy.<br>On your&nbsp;phone.</h1></div>
+        <div class="rise"><h1 id="hero-h">The caddy<br>you already&nbsp;own.</h1></div>
         <div class="rise"><p class="sub">Clamp it to the cart. It reads your swing and every shot.</p></div>
         <div class="rise"><div class="cta"><a class="pill" href="#early-access">Get early access</a></div></div>
       </div></div>
