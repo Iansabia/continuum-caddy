@@ -211,7 +211,7 @@
 
       <div class="stagewrap">
         <div class="stage" id="stage" role="img" aria-label="A phone clamped to a golf cart records a golf swing; the tracked ball flies a measured arc and lands inside the calculated miss; the cart drives to the spot while the phone scans for the ball and finds it.">
-          <div class="poster"><img src="../assets/how2/light/poster.webp?v=10" width="1280" height="800" alt="" decoding="async"></div>
+          <div class="poster"><img src="../assets/how3/light/poster.webp?v=10" width="1280" height="800" alt="" decoding="async"></div>
           <video class="film" muted playsinline loop preload="none" aria-hidden="true" disablepictureinpicture></video>
           <canvas class="scrub" aria-hidden="true"></canvas>
           <div class="loading" aria-hidden="true"></div>
@@ -281,9 +281,9 @@
 
   <section class="band" aria-label="Moments">
     <div class="tiles">
-      <div class="tile reveal" data-reveal style="--i:0"><video muted playsinline loop preload="none" poster="../assets/how2/light/still_0.webp?v=10" data-still="0" data-t0="0.4" data-t1="3.6" aria-hidden="true" disablepictureinpicture></video><span>Roof mount.</span></div>
-      <div class="tile reveal" data-reveal style="--i:1"><video muted playsinline loop preload="none" poster="../assets/how2/light/still_3.webp?v=10" data-still="3" data-t0="8.8" data-t1="12.6" aria-hidden="true" disablepictureinpicture></video><span>Every carry.</span></div>
-      <div class="tile reveal" data-reveal style="--i:2"><video muted playsinline loop preload="none" poster="../assets/how2/light/still_5.webp?v=10" data-still="5" data-t0="18.6" data-t1="21.3" aria-hidden="true" disablepictureinpicture></video><span>Ball found.</span></div>
+      <div class="tile reveal" data-reveal style="--i:0"><video muted playsinline loop preload="none" poster="../assets/how3/light/still_0.webp?v=10" data-still="0" data-t0="0.4" data-t1="3.6" aria-hidden="true" disablepictureinpicture></video><span>Roof mount.</span></div>
+      <div class="tile reveal" data-reveal style="--i:1"><video muted playsinline loop preload="none" poster="../assets/how3/light/still_3.webp?v=10" data-still="3" data-t0="8.8" data-t1="12.6" aria-hidden="true" disablepictureinpicture></video><span>Every carry.</span></div>
+      <div class="tile reveal" data-reveal style="--i:2"><video muted playsinline loop preload="none" poster="../assets/how3/light/still_5.webp?v=10" data-still="5" data-t0="18.6" data-t1="21.3" aria-hidden="true" disablepictureinpicture></video><span>Ball found.</span></div>
     </div>
   </section>
 
@@ -302,9 +302,9 @@
 <script>
 (function(){
   'use strict';
-  var FILM={S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=13'};   // one object: bump together when the film changes
+  var FILM={S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=14'};   // one object: bump together when the film changes
   var APP={SEQ_N:165,STEP:2,V:'?v=2'};                                                                          // the app-screen bake, frames 0-329 every 2nd
-  var ROOT_BASE='../assets/how2/', FPS=30;
+  var ROOT_BASE='../assets/how3/', FPS=30;
   var SCRUB=[]; for(var q=0;q<=FILM.QMAX;q++){ var skip=false; for(var s=0;s<FILM.SKIP.length;s++){ if(q>=FILM.SKIP[s][0]&&q<=FILM.SKIP[s][1]) skip=true; } if(!skip) SCRUB.push(q); }
   var APPLIST=[]; for(var a=0;a<APP.SEQ_N;a++) APPLIST.push(a);
   var rmq=matchMedia('(prefers-reduced-motion: reduce)');
@@ -364,7 +364,7 @@
     if(idx!==activeIdx){ activeIdx=idx; lines.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); });
       if(rmq.matches) setStill([0,2,3,4,5][idx]); } }
   function tier(){ return (innerWidth<900)?'small_2x':'large_2x'; }
-  var film=makeScrub({ sec:shot, sticky:sticky, stage:stage, canvas:stage.querySelector('canvas.scrub'), video:stage.querySelector('video.film'), W:1280, H:800, n:FILM.SEQ_N, list:SCRUB,
+  var film=makeScrub({ sec:shot, sticky:sticky, stage:stage, canvas:stage.querySelector('canvas.scrub'), video:stage.querySelector('video.film'), W:1920, H:1200, n:FILM.SEQ_N, list:SCRUB,
     url:function(j){ return BASE()+'seq1/s_'+pad(j,3)+'.webp'+FILM.V; }, vidUrl:function(){ return BASE()+tier()+(isSafari()?'.mov':'.webm')+FILM.V; }, fbUrl:function(){ return BASE()+'fallback_'+(isDark()?'dark':'cream')+'.mp4'+FILM.V; },
     onIndex:function(i){ setTime(i*FILM.STEP/FPS); } });
   var clockRaf=0;
