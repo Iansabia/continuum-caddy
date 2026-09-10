@@ -83,11 +83,16 @@
   .shot.is-pinned:not(.is-intro) .claim::before{opacity:0;}
   .shot.is-pinned:not(.is-intro) .claim{grid-template-rows:0fr;opacity:0;pointer-events:none;}
   .claim h1{margin:0 auto;max-width:12ch;}
+  /* the outro: as the film dissolves out (--fo -> 0) the next headline dissolves in, centred, so there is no empty ground to scroll through */
+  .outro{position:absolute;inset:0;z-index:3;display:grid;place-items:center;text-align:center;padding:0 var(--gut);pointer-events:none;opacity:calc(1 - var(--fo,1));transform:translateY(calc(var(--fo,1) * 28px));}
+  .outro h2{margin:0 auto;max-width:14ch;} .outro .sub{margin:18px auto 0;text-align:center;}
+  .shot:not(.is-pinned) .outro{display:none;}
+  .proof.is-pinned .head,.proof.is-pinned>.psticky>.sub{display:none;}   /* pinned: the outro already said it */
   .claim .sub{margin:22px auto 0;text-align:center;}
   .claim .cta{margin:26px 0 8px;}
   .rise{overflow:hidden;padding-bottom:.12em;margin-bottom:-.12em;} .rise>*{transform:translateY(105%);opacity:0;transition:transform .7s var(--ease),opacity .5s var(--ease);}
   .ready .rise>*{transform:none;opacity:1;} .ready .rise:nth-child(2)>*{transition-delay:.08s;} .ready .rise:nth-child(3)>*{transition-delay:.16s;}
-  .lines{position:absolute;left:0;right:0;bottom:7svh;z-index:2;height:84px;margin:0 auto;width:min(900px,94vw);transition:opacity .3s;opacity:var(--fo,1);}
+  .lines{position:absolute;left:0;right:0;bottom:7svh;z-index:2;height:84px;margin:0 auto;width:min(900px,94vw);transition:opacity .3s;opacity:calc(var(--fo,1) * var(--fo,1) * var(--fo,1));}   /* the captions leave ahead of the film so they never sit on the outro headline */
   .line{position:absolute;left:0;right:0;top:0;width:100%;font-size:clamp(22px,2.6vw,38px);letter-spacing:-.02em;line-height:1.1;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;padding:0 8px;text-shadow:0 1px 18px var(--bg),0 0 40px var(--bg);}
   .line i{font-style:normal;font-family:var(--mono);font-size:13px;letter-spacing:.04em;color:var(--acc);display:block;margin-bottom:8px;}
   .line b{font-family:var(--mono);font-weight:500;letter-spacing:0;}
@@ -128,9 +133,17 @@
   .iphone .loading{bottom:calc(var(--ph) * -.04);}
   .plines{position:relative;height:62px;width:min(700px,94vw);margin-top:18px;}
   .plines .line{font-size:clamp(20px,2vw,28px);text-shadow:none;}
-  .stats{display:flex;justify-content:center;gap:clamp(24px,5vw,72px);padding:0 var(--gut) clamp(96px,12vw,160px);flex-wrap:wrap;}
-  .stat b{display:block;font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;font-size:clamp(28px,3.4vw,48px);letter-spacing:-.02em;line-height:1;}
-  .stat span{display:block;font-size:14px;color:var(--body);margin-top:8px;}
+  /* how it reads a shot: four steps on one drawn line */
+  .how{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,48px);max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,56px) var(--gut) clamp(96px,12vw,160px);}
+  .how .track{position:absolute;left:var(--gut);right:var(--gut);top:calc(clamp(24px,4vw,56px) + 11px);height:1px;background:var(--rule);transform:scaleX(0);transform-origin:left;transition:transform 1.6s var(--ease) .2s;}
+  .how.in .track{transform:scaleX(1);}
+  .step{position:relative;padding-top:34px;text-align:left;}
+  .step::before{content:"";position:absolute;left:0;top:7px;width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--bg);transform:scale(0);transition:transform .6s var(--ease);transition-delay:calc(var(--i,0) * 220ms + .5s);}
+  .how.in .step::before{transform:scale(1);}
+  .step i{font-style:normal;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--acc);display:block;margin-left:22px;margin-top:-30px;margin-bottom:22px;}
+  .step b{display:block;font-weight:500;font-size:clamp(20px,1.8vw,26px);letter-spacing:-.02em;margin-bottom:8px;}
+  .step span{display:block;font-size:15px;line-height:1.4;color:var(--body);max-width:30ch;}
+  @media (max-width:760px){.how{grid-template-columns:1fr;gap:28px;} .how .track{display:none;} .step{padding-top:0;} .step::before{display:none;} .step i{margin:0 0 6px;}}
 
   /* proof, live: once the scrub starts the headline folds away, the phone grows and two telemetry columns fade in beside it */
   .proof .head{display:grid;grid-template-rows:1fr;width:100%;transition:grid-template-rows .7s var(--ease),opacity .4s var(--ease);} .proof .head>div{overflow:hidden;}
@@ -205,6 +218,7 @@
         </div>
       </div>
 
+      <div class="outro" aria-hidden="true"><div><h2>Real footage. Real numbers.</h2><p class="sub">Shot on an iPhone. No markers, no sensors.</p></div></div>
       <div class="lines" role="list" aria-label="How it works">
         <div class="hint" id="hint" aria-hidden="true">Scroll</div>
         <button class="line is-active" role="listitem" data-t0="0" aria-current="step"><i>01</i>Clip it to the cart.</button>
@@ -255,11 +269,13 @@
     </div>
   </section>
 
-  <section class="band" aria-label="What it measures">
-    <div class="stats" id="stats" data-reveal>
-      <div class="stat reveal" style="--i:0"><b data-n="17">0</b><span>body points</span></div>
-      <div class="stat reveal" style="--i:1"><b data-n="120" data-unit=" fps">0 fps</b><span>every swing</span></div>
-      <div class="stat reveal" style="--i:2"><b data-n="0" data-from="12">12</b><span>sensors</span></div>
+  <section class="band" aria-label="How it reads a shot">
+    <div class="how" id="how" data-reveal>
+      <div class="track" aria-hidden="true"></div>
+      <div class="step reveal" style="--i:0"><i>01</i><b>Capture</b><span>120 fps, 4K, face-on from the cart. The phone never leaves the mount.</span></div>
+      <div class="step reveal" style="--i:1"><i>02</i><b>Track</b><span>17 body points and the club, every frame, so impact is found to the millisecond.</span></div>
+      <div class="step reveal" style="--i:2"><i>03</i><b>Trace</b><span>The ball leaves as a blur streak. The tracker follows the streak, not a dot.</span></div>
+      <div class="step reveal" style="--i:3"><i>04</i><b>Fit</b><span>A flight model turns that streak into speed, launch, carry and apex, then where it stopped.</span></div>
     </div>
   </section>
 
