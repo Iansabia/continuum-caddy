@@ -225,9 +225,16 @@
     .shot.is-pinned .line{text-shadow:none;}
     .proof.is-pinned{height:300vh;margin-top:-14svh;}
     .proof.is-pinned .psticky{justify-content:center;padding:72px var(--gut) 18px;}
-    .proof .stagegrid{grid-template-columns:1fr;}
-    .proof .side{display:none;}                                   /* two mono columns will not sit beside a phone at this width; the app screen carries the numbers */
-    .proof.is-live .iphone{--ph:clamp(300px,calc(100svh - 224px),640px);}
+    /* the phone sat at the start of a single 1fr column, i.e. hard against the left gutter. Below 900px the two
+       telemetry columns move underneath it and the phone shrinks to make room for them, still mirrored about the centre. */
+    .proof .stagegrid{grid-template-columns:auto auto;grid-template-areas:"ph ph" "l r";justify-content:center;justify-items:center;align-items:start;gap:clamp(12px,2vh,22px) clamp(18px,6vw,44px);}
+    .proof .iphone{grid-area:ph;}
+    .proof .side.l{grid-area:l;justify-self:end;}
+    .proof .side.r{grid-area:r;justify-self:start;}
+    .proof .side{font-size:11px;gap:clamp(5px,.9vh,10px);}
+    .proof .side .row b{font-size:17px;margin-top:2px;}
+    .proof .side .row:nth-child(n+4){display:none;}               /* three rows a side is what fits under the phone */
+    .proof.is-live .iphone{--ph:clamp(260px,calc(100svh - 400px),520px);}
   }
   @media (max-width:900px) and (orientation:landscape){
     .shot.is-pinned .sticky,.proof.is-pinned .psticky{padding-top:60px;}
