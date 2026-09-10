@@ -163,8 +163,8 @@
   .proof.is-live .iphone{--ph:clamp(360px,calc(100svh - 236px),900px);}
   .proof.is-live .sub{opacity:.75;}
 
-  /* the contrast band eases in and out of the page ground instead of a hard edge */
-  .band.dark.early{background:linear-gradient(to bottom,var(--bg) 0,var(--cbg) 150px,var(--cbg) calc(100% - 130px),var(--bg) 100%);padding:clamp(140px,13vw,190px) var(--gut) clamp(120px,11vw,160px);}
+  /* the contrast band: a solid block with hard edges (Ian preferred it to the gradient version) */
+  .band.dark.early{padding:clamp(110px,11vw,150px) var(--gut) clamp(100px,10vw,140px);}
 
   /* stills band */
   .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 var(--gut) clamp(40px,4vw,56px);max-width:1440px;margin:0 auto;}
@@ -426,7 +426,7 @@
 
   /* nav colour follows the ground under it (only the contrast band is a different ground) */
   var darkBands=Array.prototype.slice.call(document.querySelectorAll('.band.dark'));
-  function navTone(){ var y=28, on=false; for(var i=0;i<darkBands.length;i++){ var b=darkBands[i].getBoundingClientRect(); if(b.top+150<=y&&b.bottom-150>y){ on=true; break; } } nav.classList.toggle('on-dark',on); }
+  function navTone(){ var y=28, on=false; for(var i=0;i<darkBands.length;i++){ var b=darkBands[i].getBoundingClientRect(); if(b.top<=y&&b.bottom>y){ on=true; break; } } nav.classList.toggle('on-dark',on); }
 
   function onScroll(){
     navTone();
