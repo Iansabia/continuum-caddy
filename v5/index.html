@@ -113,7 +113,7 @@
 
   /* proof: one phone that scrubs capture -> track -> read as you scroll */
   .proof{text-align:center;}
-  .proof.is-pinned{height:280vh;}
+  .proof.is-pinned{height:280vh;margin-top:-20svh;}   /* tucks up under the film's outro headline (the film is fully dissolved by then), so the headline and the phone are not a viewport apart */
   .psticky{display:flex;flex-direction:column;align-items:center;padding:96px var(--gut) 28px;}
   .proof.is-pinned .psticky{position:sticky;top:0;height:100vh;height:100svh;padding-top:84px;overflow:hidden;}
   .proof .sub{margin:16px auto 0;}
@@ -134,7 +134,7 @@
   .plines{position:relative;height:62px;width:min(700px,94vw);margin-top:18px;}
   .plines .line{font-size:clamp(20px,2vw,28px);text-shadow:none;}
   /* how it reads a shot: four steps on one drawn line */
-  .how{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,48px);max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,56px) var(--gut) clamp(96px,12vw,160px);}
+  .how{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,48px);max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,56px) var(--gut) clamp(56px,6vw,84px);}
   .how .track{position:absolute;left:var(--gut);right:var(--gut);top:calc(clamp(24px,4vw,56px) + 11px);height:1px;background:var(--rule);transform:scaleX(0);transform-origin:left;transition:transform 1.6s var(--ease) .2s;}
   .how.in .track{transform:scaleX(1);}
   .step{position:relative;padding-top:34px;text-align:left;}
@@ -158,16 +158,16 @@
   .side .row small{display:block;font-size:.78em;letter-spacing:.1em;text-transform:uppercase;opacity:.75;}
   .side .row b{display:block;font-weight:500;color:var(--ink);font-size:clamp(20px,2.1vw,34px);letter-spacing:-.02em;line-height:1.1;margin-top:3px;transition:opacity .4s,color .4s;}
   .side .row.dim b{opacity:.22;} .side .row.hot b,.side .row.hot small{color:var(--acc);opacity:1;}
-  .proof.is-live .side{opacity:1;} .proof.is-live .side .row{opacity:1;transform:none;}
+  .proof.is-near .side{opacity:1;} .proof.is-near .side .row{opacity:1;transform:none;}
   .iphone.reveal{transition:opacity .9s var(--ease),transform .9s var(--ease),height .8s var(--ease);}
   .proof.is-live .iphone{--ph:clamp(360px,calc(100svh - 236px),900px);}
   .proof.is-live .sub{opacity:.75;}
 
   /* the contrast band eases in and out of the page ground instead of a hard edge */
-  .band.dark.early{background:linear-gradient(to bottom,var(--bg) 0,var(--cbg) 220px,var(--cbg) calc(100% - 180px),var(--bg) 100%);padding:clamp(180px,20vw,300px) var(--gut);}
+  .band.dark.early{background:linear-gradient(to bottom,var(--bg) 0,var(--cbg) 150px,var(--cbg) calc(100% - 130px),var(--bg) 100%);padding:clamp(140px,13vw,190px) var(--gut) clamp(120px,11vw,160px);}
 
   /* stills band */
-  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 var(--gut) clamp(96px,12vw,160px);max-width:1440px;margin:0 auto;}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 var(--gut) clamp(40px,4vw,56px);max-width:1440px;margin:0 auto;}
   @media (max-width:760px){.tiles{grid-template-columns:1fr;}}
   .tile{background:var(--tile);border-radius:clamp(22px,3vw,38px);overflow:hidden;aspect-ratio:8/5;position:relative;}
   .tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.12);transition:transform 1.6s var(--ease);}
@@ -181,7 +181,7 @@
   .band.dark .pill{background:var(--cink);color:var(--cbg);} .band.dark .pill:hover{background:var(--cacc);color:var(--cbg);}
 
   /* footer */
-  footer{position:relative;overflow:hidden;padding:clamp(56px,8vw,110px) var(--gut) 28px;}
+  footer{position:relative;overflow:hidden;padding:clamp(32px,4vw,56px) var(--gut) 28px;}
   footer .ghost{font-size:clamp(72px,17vw,280px);letter-spacing:-.045em;line-height:.85;color:var(--ghost);user-select:none;text-align:center;transition:color .35s,opacity 1.2s var(--ease),transform 1.2s var(--ease),letter-spacing 1.2s var(--ease);}
   footer .ghost:not(.in){opacity:0;transform:translateY(14%);letter-spacing:.02em;}
   footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--body);margin-top:clamp(24px,4vw,48px);}
@@ -376,7 +376,7 @@
 
   /* ---- the phone ---- */
   var proof=document.getElementById('proof'), psticky=proof.querySelector('.psticky'), iphone=document.getElementById('iphone'), plines=Array.prototype.slice.call(proof.querySelectorAll('.plines .line'));
-  if(PIN) proof.classList.add('is-pinned');
+  if(PIN){ proof.classList.add('is-pinned'); proof.classList.add('is-live'); iphone.classList.add('in'); }   /* pinned: always the full layout (big phone + telemetry), and the phone is visible the moment it rises into view - no reveal gate, no lone small phone in the hand-off from the film */
   var pActive=-1;
   function setPhase(i){ var idx=0; for(var k=0;k<plines.length;k++){ if(i>=parseInt(plines[k].dataset.i0,10)) idx=k; }
     if(idx!==pActive){ pActive=idx; plines.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); }); }
@@ -434,10 +434,10 @@
     var p=film.progress();
     if(p<0){ film.setMode('video'); shot.style.setProperty('--fo','1'); }
     else { shot.classList.toggle('is-intro',p<=0.002); if(p>0.002) hint.classList.add('is-gone');
-      if(p<=0.002){ film.setMode('video'); } else { film.setMode('scrub'); film.setTarget(p); }
-      var fo=p>0.88?Math.max(0,1-(p-0.88)/0.12):1; shot.style.setProperty('--fo',fo.toFixed(3)); }   /* the film dissolves into the page ground over the last 12% of the pin */
+      if(p<=0.002){ film.setMode('video'); } else { film.setMode('scrub'); film.setTarget(Math.min(1,p/0.92)); }   /* the film plays over the first 92% of the pin */
+      var fo=p>0.86?Math.max(0,1-(p-0.86)/0.08):1; shot.style.setProperty('--fo',fo.toFixed(3)); }   /* ...dissolves into the page ground over 0.86-0.94, and the outro holds centred for the last 6% while the phone section tucks in below it */
     var pp=app.progress();
-    proof.classList.toggle('is-live',pp>0.02);
+    proof.classList.toggle('is-near',proof.getBoundingClientRect().top<innerHeight*0.98);   /* the telemetry columns slide in as the section's top enters the viewport */
     if(pp<0){ app.setMode('still'); } else if(pp<=0.001){ app.setMode('still'); app.setTarget(0); } else { app.setMode('scrub'); app.setTarget(pp); }
   }
 
