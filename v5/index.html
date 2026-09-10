@@ -65,6 +65,11 @@
   .stagewrap{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:var(--fo,1);}   /* --fo: the film dissolves into the page ground at the end of the pin */
   .stage{position:absolute;inset:0;width:100%;height:100%;transform:scale(var(--fs,1.1)) translateY(var(--fy,0%));transform-origin:50% 50%;transition:transform .9s var(--ease);will-change:transform;}
   .shot.is-intro .stage{--fs:1.15;--fy:27%;}                /* the intro: a touch bigger and lower, under the claim; the side edges sit off-screen */
+  /* intro sky fade: the shifted film's feathered top edge (trees, roof bar) dissolves into the page ground over the top half of the viewport, ending just above the phone's clamp; gone once the film pins full-bleed */
+  .stagewrap::before{content:"";position:absolute;left:0;right:0;top:0;height:52%;z-index:6;pointer-events:none;opacity:0;transition:opacity .6s var(--ease);
+    background:linear-gradient(to bottom,var(--bg) 0%,var(--bg) 46%,color-mix(in srgb,var(--bg) 88%,transparent) 56%,color-mix(in srgb,var(--bg) 62%,transparent) 68%,color-mix(in srgb,var(--bg) 30%,transparent) 84%,transparent 100%);}
+  .shot.is-intro .stagewrap::before{opacity:1;}
+  .shot:not(.is-pinned) .stagewrap::before{display:none;}
   .stage .poster,.stage canvas,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block;}
   .stage .poster{z-index:1;transition:opacity .35s var(--ease);} .stage .poster img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .2s;}
   .stage video{z-index:3;opacity:0;transition:opacity .35s var(--ease);}
