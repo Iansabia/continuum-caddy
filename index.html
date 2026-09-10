@@ -174,15 +174,32 @@
   /* stills band */
   .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 var(--gut) clamp(40px,4vw,56px);max-width:1440px;margin:0 auto;}
   @media (max-width:760px){.tiles{grid-template-columns:1fr;}}
-  .tile{background:var(--tile);border-radius:clamp(22px,3vw,38px);overflow:hidden;aspect-ratio:8/5;position:relative;}
+  .tile{position:relative;text-align:left;}
+  .tframe{background:var(--tile);border-radius:clamp(22px,3vw,38px);overflow:hidden;aspect-ratio:8/5;position:relative;}
   .tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.12);transition:transform 1.6s var(--ease);}
   .tile.in img,.tile.in video{transform:scale(1.02);}
-  .tile span{position:absolute;left:22px;bottom:18px;font-size:15px;letter-spacing:-.01em;}
+  .tcap{padding:18px 4px 0;}
+  .tcap b{display:block;font-weight:500;font-size:clamp(17px,1.35vw,20px);letter-spacing:-.02em;margin-bottom:6px;}
+  .tcap span{display:block;font-size:14.5px;line-height:1.5;color:var(--body);max-width:40ch;}
 
   /* early access */
   .early{padding:clamp(96px,12vw,160px) var(--gut);text-align:center;}
   .early .sub{margin:18px auto 0;}
   .early .cta{margin-top:28px;}
+  /* the early-access panel: the CTA opens an honest status block instead of doing nothing */
+  [hidden]{display:none!important;}   /* an author-level display:grid/flex beats the UA's [hidden] rule, so state it once here */
+  .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  .eapanel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s var(--ease),opacity .4s var(--ease);opacity:0;margin-top:22px;}
+  .eapanel>.eainner{overflow:hidden;min-height:0;}
+  .eapanel.is-open{grid-template-rows:1fr;opacity:1;}
+  .eainner b{display:block;font-weight:500;font-size:clamp(18px,1.5vw,22px);letter-spacing:-.02em;padding-top:16px;}
+  .eainner p{margin:10px auto 0;max-width:46ch;font-size:15px;line-height:1.5;color:var(--body);}
+  .eaform{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .eaform input{font:inherit;font-size:15px;color:var(--cink);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:12px 18px;min-width:min(300px,80vw);outline:none;transition:border-color .25s;}   /* the band is a dark ground in both themes */
+  .eaform input:focus-visible{border-color:var(--cacc);}
+  .eaform input::placeholder{color:var(--body);opacity:.7;}
+  .eanote{font-size:14px;min-height:1.2em;}
+  .eanote.bad{color:#e08a5c;}
   .band.dark .pill{background:var(--cink);color:var(--cbg);} .band.dark .pill:hover{background:var(--cacc);color:var(--cbg);}
 
   /* footer */
@@ -190,6 +207,33 @@
   footer .ghost{font-size:clamp(72px,17vw,280px);letter-spacing:-.045em;line-height:.85;color:var(--ghost);user-select:none;text-align:center;transition:color .35s,opacity 1.2s var(--ease),transform 1.2s var(--ease),letter-spacing 1.2s var(--ease);}
   footer .ghost:not(.in){opacity:0;transform:translateY(14%);letter-spacing:.02em;}
   footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--body);margin-top:clamp(24px,4vw,48px);}
+
+  /* ---- phones and small tablets: the same pinned scroll-scrub, laid out for a portrait screen ----
+     The film is 1.6:1. Cropped to cover a portrait viewport it would show only its middle third, so on a narrow
+     screen it stays a full-width landscape band, vertically centred, with the headline above and the caption below. */
+  @media (max-width:900px){
+    .nav::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(100% + 30px);z-index:-1;pointer-events:none;background:linear-gradient(to bottom,var(--bg) 62%,transparent);transition:background .35s;}   /* narrow columns run under the fixed nav; a scrim of the current ground keeps the wordmark legible */
+    .nav.on-dark::before{background:linear-gradient(to bottom,var(--cbg) 62%,transparent);}
+    .shot.is-pinned{height:380vh;}
+    .shot.is-pinned .sticky{justify-content:center;padding:72px var(--gut) 18px;}
+    .shot.is-pinned .stagewrap{position:relative;inset:auto;flex:0 0 auto;width:100vw;margin-left:calc(50% - 50vw);aspect-ratio:4/3;}   /* 4:3 rather than the film's 8:5: it fills a portrait screen properly and only trims 8% off each side, well clear of the action */
+    .shot.is-pinned .stage,.shot.is-pinned.is-intro .stage{--fs:1;--fy:0%;}   /* no overscan: the render's own feathered top and bottom edges stay in frame, so the band melts into the ground instead of ending on a hard line */
+    .shot.is-pinned .stagewrap::before,.shot.is-pinned .claim::before{display:none;}   /* both exist to blend a full-bleed film into the ground; the band has its own edges */
+    .shot.is-pinned .claim{margin-bottom:20px;}
+    .shot.is-pinned:not(.is-intro) .claim{margin-bottom:0;}
+    .shot.is-pinned .lines{position:relative;left:auto;right:auto;bottom:auto;height:88px;margin-top:18px;}
+    .shot.is-pinned .line{text-shadow:none;}
+    .proof.is-pinned{height:300vh;margin-top:-14svh;}
+    .proof.is-pinned .psticky{justify-content:center;padding:72px var(--gut) 18px;}
+    .proof .stagegrid{grid-template-columns:1fr;}
+    .proof .side{display:none;}                                   /* two mono columns will not sit beside a phone at this width; the app screen carries the numbers */
+    .proof.is-live .iphone{--ph:clamp(300px,calc(100svh - 224px),640px);}
+  }
+  @media (max-width:900px) and (orientation:landscape){
+    .shot.is-pinned .sticky,.proof.is-pinned .psticky{padding-top:60px;}
+    .shot.is-pinned .lines{height:64px;margin-top:10px;}
+    .shot.is-pinned .claim{margin-bottom:10px;}
+  }
 
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
@@ -201,7 +245,7 @@
   <a class="brand" href="#top">Continuum</a>
   <div class="right">
     <button class="theme" id="theme" type="button" aria-label="Switch to dark mode" title="Switch theme"><span></span></button>
-    <a class="pill" href="#early-access">Get early access</a>
+    <a class="pill" href="#early-access">Join the waitlist</a>
   </div>
 </nav>
 
@@ -211,7 +255,7 @@
       <div class="claim"><div>
         <div class="rise"><h1 id="hero-h">The caddy<br>you already&nbsp;own.</h1></div>
         <div class="rise"><p class="sub">Clamp it to the cart. It reads your swing and every shot.</p></div>
-        <div class="rise"><div class="cta"><a class="pill" href="#early-access">Get early access</a></div></div>
+        <div class="rise"><div class="cta"><a class="pill" href="#early-access">Join the waitlist</a></div></div>
       </div></div>
 
       <div class="stagewrap">
@@ -286,16 +330,31 @@
 
   <section class="band" aria-label="Moments">
     <div class="tiles">
-      <div class="tile reveal" data-reveal style="--i:0"><video muted playsinline loop preload="none" poster="assets/how3/light/still_0.webp?v=10" data-still="0" data-t0="0.4" data-t1="3.6" aria-hidden="true" disablepictureinpicture></video><span>Roof mount.</span></div>
-      <div class="tile reveal" data-reveal style="--i:1"><video muted playsinline loop preload="none" poster="assets/how3/light/still_3.webp?v=10" data-still="3" data-t0="8.8" data-t1="12.6" aria-hidden="true" disablepictureinpicture></video><span>Every carry.</span></div>
-      <div class="tile reveal" data-reveal style="--i:2"><video muted playsinline loop preload="none" poster="assets/how3/light/still_5.webp?v=10" data-still="5" data-t0="18.6" data-t1="21.3" aria-hidden="true" disablepictureinpicture></video><span>Ball found.</span></div>
+      <div class="tile reveal" data-reveal style="--i:0"><div class="tframe"><video muted playsinline loop preload="none" poster="assets/how3/light/still_0.webp?v=10" data-still="0" data-t0="0.4" data-t1="3.6" aria-hidden="true" disablepictureinpicture></video></div>
+        <div class="tcap"><b>Clamp it once.</b><span>The phone hangs from the cart's roof bar with the camera on you, and stays there all round. Step up, swing, and it records at 120 frames a second without you touching it.</span></div></div>
+      <div class="tile reveal" data-reveal style="--i:1"><div class="tframe"><video muted playsinline loop preload="none" poster="assets/how3/light/still_3.webp?v=10" data-still="3" data-t0="8.8" data-t1="12.6" aria-hidden="true" disablepictureinpicture></video></div>
+        <div class="tcap"><b>The flight, rebuilt.</b><span>At that speed the ball is only a blur streak on the video. The tracker follows the streak and fits a flight curve to it, drawn here as the violet arc: 156 yards of carry, 86 feet at the top.</span></div></div>
+      <div class="tile reveal" data-reveal style="--i:2"><div class="tframe"><video muted playsinline loop preload="none" poster="assets/how3/light/still_5.webp?v=10" data-still="5" data-t0="18.6" data-t1="21.3" aria-hidden="true" disablepictureinpicture></video></div>
+        <div class="tcap"><b>Then it finds it.</b><span>That same curve says where the ball came down, and the rust oval is the estimate painted on the ground. Drive to it and the phone marks the ball in the grass.</span></div></div>
     </div>
   </section>
 
   <section id="early-access" class="band dark early" aria-labelledby="ea-h">
     <div class="mask" data-reveal><h2 id="ea-h">Be first on the tee.</h2></div>
     <p class="sub reveal" data-reveal style="--i:1">Private beta. Bring your own cart.</p>
-    <div class="cta reveal" data-reveal style="--i:2"><a class="pill" href="#early-access">Get early access</a></div>
+    <div class="cta reveal" data-reveal style="--i:2"><button class="pill" id="ea-open" type="button" aria-expanded="false" aria-controls="ea-panel">Join the waitlist</button></div>
+    <div class="eapanel" id="ea-panel" hidden>
+      <div class="eainner">
+        <b>The beta is not open yet.</b>
+        <p>The model is still learning on real shots, and we will not hand it to anyone until the numbers hold up. <span id="ea-tail">Sign-ups open here shortly.</span></p>
+        <form class="eaform" id="ea-form" hidden novalidate>
+          <label class="vh" for="ea-email">Email address</label>
+          <input id="ea-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required>
+          <button class="pill" type="submit">Add me</button>
+        </form>
+        <p class="eanote" id="ea-note" role="status" aria-live="polite"></p>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -307,12 +366,22 @@
 <script>
 (function(){
   'use strict';
-  var FILM={S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=14'};   // one object: bump together when the film changes
-  var APP={SEQ_N:165,STEP:2,V:'?v=2'};                                                                          // the app-screen bake, frames 0-329 every 2nd
+  var rmq=matchMedia('(prefers-reduced-motion: reduce)');
+  var wide=matchMedia('(min-width: 901px)').matches;
+  var MOB=!wide;                       // a narrow viewport gets the same scroll-scrub, on a lighter frame tier and in a portrait layout
+  var PIN=!rmq.matches;                // the pin is what makes the film scrub; only reduced motion opts out
+  /* one object per stage: the frame tier, its geometry and the scrub index maths. The mobile tier is every 2nd film frame at
+     960x600 (4.2 MB a theme instead of 20), which is still 2x a phone's CSS pixels and a third of the bytes. */
+  var FILM=MOB
+    ? {S:22.4,FRAMES:672,SEQ_N:336,STEP:2,QMAX:320,SKIP:[[192,205],[224,231],[242,249],[269,276]],V:'?v=14',DIR:'seq1m/',W:960,H:600}
+    : {S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=14',DIR:'seq1/',W:1920,H:1200};
+  var APP=MOB
+    ? {SEQ_N:110,STEP:3,V:'?v=2',DIR:'assets/app2m/seq/',W:400,H:871}
+    : {SEQ_N:165,STEP:2,V:'?v=2',DIR:'assets/app2/seq/',W:640,H:1394};
+  function ai(v){ return Math.round(v*2/APP.STEP); }   // the phone's phase marks are written as step-2 indices; rescale them to whatever tier is loaded
   var ROOT_BASE='assets/how3/', FPS=30;
   var SCRUB=[]; for(var q=0;q<=FILM.QMAX;q++){ var skip=false; for(var s=0;s<FILM.SKIP.length;s++){ if(q>=FILM.SKIP[s][0]&&q<=FILM.SKIP[s][1]) skip=true; } if(!skip) SCRUB.push(q); }
   var APPLIST=[]; for(var a=0;a<APP.SEQ_N;a++) APPLIST.push(a);
-  var rmq=matchMedia('(prefers-reduced-motion: reduce)');
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ document.body.classList.add('ready'); }); });
 
   /* theme: system by default, the dot overrides (remembered per browser). The film has a light-ink and a dark-ink cut. */
@@ -322,8 +391,7 @@
   function BASE(){ return ROOT_BASE+(isDark()?'':'light/'); }
   function pad(n,w){ n=String(n); while(n.length<w) n='0'+n; return n; }
   function isSafari(){var u=navigator.userAgent;return /Safari/.test(u)&&!/Chrome|Chromium|Edg|OPR|Android/.test(u);}
-  var fine=matchMedia('(pointer: fine)').matches, wide=matchMedia('(min-width: 901px)').matches;
-  var PIN=fine&&wide&&!rmq.matches;
+  if(MOB) document.documentElement.classList.add('mob');
 
   /* one scrub engine for both stages: a frame list drawn on a canvas with blended in-between frames, a video for the un-pinned path */
   function makeScrub(o){
@@ -335,7 +403,7 @@
     function drawAt(x){ var i=Math.round(x), key=o.list[i], A=near(key); if(!A) return; fit();
       if(key===shownKey) return; shownKey=key;          // nearest frame only: cross-blending two alpha frames made moving parts translucent and soft between frames (the flicker)
       ctx.clearRect(0,0,o.W,o.H); ctx.drawImage(A,0,0,o.W,o.H); }
-    function load(){ var NL=o.list.length; wanted=true; if(loading||loadedN>=NL) return; loading=true; o.stage.classList.add('is-loading'); var inflight=0, MAXC=6, gen=fr, k=0, order=[];
+    function load(){ var NL=o.list.length; wanted=true; if(loading||loadedN>=NL) return; loading=true; o.stage.classList.add('is-loading'); var inflight=0, MAXC=MOB?4:6, gen=fr, k=0, order=[];   // fewer parallel fetches on a phone so decoding never starves the scroll
       var ci=Math.round(Math.max(0,Math.min(NL-1,cur)));          // load outward from where the reader is, only frames the scrub can show, so a theme switch or a fast scroll shows the right frame first
       for(var d=0;d<NL;d++){ if(ci+d<NL) order.push(o.list[ci+d]); if(d>0&&ci-d>=0) order.push(o.list[ci-d]); }
       function pump(){ while(inflight<MAXC&&k<order.length){ (function(j){ var im=new Image(); im.decoding='async'; inflight++;
@@ -369,8 +437,8 @@
     if(idx!==activeIdx){ activeIdx=idx; lines.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); });
       if(rmq.matches) setStill([0,2,3,4,5][idx]); } }
   function tier(){ return (innerWidth<900)?'small_2x':'large_2x'; }
-  var film=makeScrub({ sec:shot, sticky:sticky, stage:stage, canvas:stage.querySelector('canvas.scrub'), video:stage.querySelector('video.film'), W:1920, H:1200, n:FILM.SEQ_N, list:SCRUB,
-    url:function(j){ return BASE()+'seq1/s_'+pad(j,3)+'.webp'+FILM.V; }, vidUrl:function(){ return BASE()+tier()+(isSafari()?'.mov':'.webm')+FILM.V; }, fbUrl:function(){ return BASE()+'fallback_'+(isDark()?'dark':'cream')+'.mp4'+FILM.V; },
+  var film=makeScrub({ sec:shot, sticky:sticky, stage:stage, canvas:stage.querySelector('canvas.scrub'), video:stage.querySelector('video.film'), W:FILM.W, H:FILM.H, n:FILM.SEQ_N, list:SCRUB,
+    url:function(j){ return BASE()+FILM.DIR+'s_'+pad(j,3)+'.webp'+FILM.V; }, vidUrl:function(){ return BASE()+tier()+(isSafari()?'.mov':'.webm')+FILM.V; }, fbUrl:function(){ return BASE()+'fallback_'+(isDark()?'dark':'cream')+'.mp4'+FILM.V; },
     onIndex:function(i){ setTime(i*FILM.STEP/FPS); } });
   var clockRaf=0;
   function clock(){ if(film.mode()==='video'&&!film.video.paused){ setTime(film.video.currentTime%FILM.S); } clockRaf=requestAnimationFrame(clock); }
@@ -383,7 +451,7 @@
   var proof=document.getElementById('proof'), psticky=proof.querySelector('.psticky'), iphone=document.getElementById('iphone'), plines=Array.prototype.slice.call(proof.querySelectorAll('.plines .line'));
   if(PIN){ proof.classList.add('is-pinned'); proof.classList.add('is-live'); iphone.classList.add('in'); }   /* pinned: always the full layout (big phone + telemetry), and the phone is visible the moment it rises into view - no reveal gate, no lone small phone in the hand-off from the film */
   var pActive=-1;
-  function setPhase(i){ var idx=0; for(var k=0;k<plines.length;k++){ if(i>=parseInt(plines[k].dataset.i0,10)) idx=k; }
+  function setPhase(i){ var idx=0; for(var k=0;k<plines.length;k++){ if(i>=ai(parseInt(plines[k].dataset.i0,10))) idx=k; }
     if(idx!==pActive){ pActive=idx; plines.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); }); }
     telemetry(i); }
   /* telemetry beside the phone (pinned only): a frame clock on the left, the numbers on the right, driven by the scrub index */
@@ -397,12 +465,12 @@
   function telemetry(i){ if(!tlFrame) return; var f=i*APP.STEP, t=f/FPS;
     tlFrame.textContent=pad(f,4); tlTime.textContent=t.toFixed(2)+' s';
     tlBody.classList.toggle('dim',t<1.4); tlImpact.classList.toggle('dim',t<6.53); tlImpact.classList.toggle('hot',t>=6.53&&t<7.6);
-    showNums(i>=100); }
-  var app=makeScrub({ sec:proof, sticky:psticky, stage:iphone, canvas:iphone.querySelector('canvas'), video:iphone.querySelector('video'), W:640, H:1394, n:APP.SEQ_N, list:APPLIST,
-    url:function(j){ return 'assets/app2/seq/a_'+pad(j,3)+'.webp'+APP.V; }, vidUrl:function(){ return 'app_screen2.mp4'; }, fbUrl:null, onIndex:function(i){ setPhase(i); } });
+    showNums(i>=ai(100)); }
+  var app=makeScrub({ sec:proof, sticky:psticky, stage:iphone, canvas:iphone.querySelector('canvas'), video:iphone.querySelector('video'), W:APP.W, H:APP.H, n:APP.SEQ_N, list:APPLIST,
+    url:function(j){ return APP.DIR+'a_'+pad(j,3)+'.webp'+APP.V; }, vidUrl:function(){ return 'app_screen2.mp4'; }, fbUrl:null, onIndex:function(i){ setPhase(i); } });
   var appClock=0;
   function appTick(){ if(app.mode()==='video'&&!app.video.paused){ setPhase(Math.round(app.video.currentTime*FPS/APP.STEP)); } appClock=requestAnimationFrame(appTick); }
-  plines.forEach(function(c){ c.addEventListener('click',function(){ var k=plines.indexOf(c), nx=parseInt(plines[(k+1)%plines.length].dataset.i0,10);
+  plines.forEach(function(c){ c.addEventListener('click',function(){ var k=plines.indexOf(c), nx=ai(parseInt(plines[(k+1)%plines.length].dataset.i0,10));
     if(PIN){ var top=proof.getBoundingClientRect().top+scrollY, dist=proof.offsetHeight-psticky.offsetHeight; scrollTo({top:top+dist*(nx/(APP.SEQ_N-1))+1,behavior:rmq.matches?'auto':'smooth'}); }
     else if(app.video.src&&!rmq.matches){ app.video.currentTime=nx*APP.STEP/FPS; } }); });
 
@@ -470,6 +538,27 @@
   if(rmq.matches||!('IntersectionObserver' in window)){ revealEls.forEach(revealIn); }
   else { var ro=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ revealIn(e.target); ro.unobserve(e.target); } });},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
     revealEls.forEach(function(el){ ro.observe(el); }); }
+
+  /* ---- early access: the CTA opens a status panel; set WAITLIST to a form endpoint to turn on the email capture ---- */
+  var WAITLIST='';   /* e.g. 'https://formspree.io/f/xxxxxxx' - until then the panel states the beta is not open and no email is collected */
+  var eaBtn=document.getElementById('ea-open'), eaPanel=document.getElementById('ea-panel'), eaForm=document.getElementById('ea-form'), eaNote=document.getElementById('ea-note'), eaMail=document.getElementById('ea-email');
+  if(WAITLIST){ eaForm.hidden=false; document.getElementById('ea-tail').textContent='Leave an email and we will write the day it opens.'; }
+  function eaOpen(){ if(eaPanel.classList.contains('is-open')) return;
+    eaPanel.hidden=false; void eaPanel.offsetHeight; eaPanel.classList.add('is-open'); eaBtn.setAttribute('aria-expanded','true');
+    if(WAITLIST) setTimeout(function(){ try{ eaMail.focus({preventScroll:true}); }catch(e){} },450); }
+  function eaToggle(){ if(eaPanel.classList.contains('is-open')){ eaPanel.classList.remove('is-open'); eaBtn.setAttribute('aria-expanded','false'); setTimeout(function(){ if(!eaPanel.classList.contains('is-open')) eaPanel.hidden=true; },620); } else eaOpen(); }
+  eaBtn.addEventListener('click',eaToggle);
+  Array.prototype.forEach.call(document.querySelectorAll('a.pill[href="#early-access"]'),function(a){ a.addEventListener('click',function(){ setTimeout(eaOpen,650); }); });
+  eaForm.addEventListener('submit',function(e){ e.preventDefault();
+    var v=(eaMail.value||'').trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ eaNote.className='eanote bad'; eaNote.textContent='That address does not look right.'; return; }
+    var btn=eaForm.querySelector('button'); btn.disabled=true; eaNote.className='eanote'; eaNote.textContent='Sending...';
+    var fd=new FormData(); fd.append('email',v); fd.append('source','continuum-caddy');
+    fetch(WAITLIST,{method:'POST',body:fd,headers:{'Accept':'application/json'}})
+      .then(function(r){ if(!r.ok) throw new Error(r.status);
+        eaForm.hidden=true; eaNote.className='eanote'; eaNote.textContent='You are on the list. We will write when the beta opens.'; })
+      .catch(function(){ btn.disabled=false; eaNote.className='eanote bad'; eaNote.textContent='That did not send. Try again in a moment.'; });
+  });
 
   addEventListener('scroll',onScroll,{passive:true}); onScroll();
   clockRaf=requestAnimationFrame(clock); appClock=requestAnimationFrame(appTick);
