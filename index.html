@@ -3,14 +3,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Continuum · AI caddy on your phone</title>
 <meta name="description" content="A phone on the golf cart reads your swing and every shot: launch-monitor numbers, where it landed, and where to find it.">
-<meta name="theme-color" id="theme-color" content="#EFEAF8">
+<meta name="theme-color" id="theme-color" content="#F6F1E6">
 <script>(function(){try{var t=localStorage.getItem('cc-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#EFEAF8; --tile:#E4DDF3; --ghost:#D9D1EC; --ink:#0B0817; --body:#4A4363; --rule:#C9C0DE; --acc:#7C5CFF;
-    --cbg:#0B0817; --ctile:#15102A; --cink:#EFEAF8; --cbody:#A79FBF; --cacc:#9B85FF;      /* the contrast band (early access) */
+    --bg:#F6F1E6; --tile:#ECE5D6; --ghost:#E2DAC8; --ink:#0B0817; --body:#4A4363; --rule:#D3CAB5; --acc:#6D4FE8;   /* light = cream, the violet reads warmer on it than on white */
+    --cbg:#0B0817; --ctile:#15102A; --cink:#F6F1E6; --cbody:#A79FBF; --cacc:#9B85FF;      /* the contrast band (early access) */
     --sans:"Instrument Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
     --ease:cubic-bezier(.22,1,.36,1);
@@ -62,9 +62,14 @@
   .shot.is-pinned{height:420vh;}
   .sticky{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:84px var(--gut) 16px;overflow:hidden;}
   .shot:not(.is-pinned) .sticky{position:static;height:auto;padding-top:112px;padding-bottom:0;}
-  .stagewrap{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
-  .stage{position:absolute;inset:0;width:100%;height:100%;transform:scale(var(--fs,1.08)) translateY(var(--fy,0%));transform-origin:50% 50%;transition:transform .9s var(--ease);will-change:transform;}
+  .stagewrap{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:var(--fo,1);}   /* --fo: the film dissolves into the page ground at the end of the pin */
+  .stage{position:absolute;inset:0;width:100%;height:100%;transform:scale(var(--fs,1.1)) translateY(var(--fy,0%));transform-origin:50% 50%;transition:transform .9s var(--ease);will-change:transform;}
   .shot.is-intro .stage{--fs:1.15;--fy:27%;}                /* the intro: a touch bigger and lower, under the claim; the side edges sit off-screen */
+  /* intro sky fade: the shifted film's feathered top edge (trees, roof bar) dissolves into the page ground over the top half of the viewport, ending just above the phone's clamp; gone once the film pins full-bleed */
+  .stagewrap::before{content:"";position:absolute;left:0;right:0;top:0;height:52%;z-index:6;pointer-events:none;opacity:0;transition:opacity .6s var(--ease);
+    background:linear-gradient(to bottom,var(--bg) 0%,var(--bg) 46%,color-mix(in srgb,var(--bg) 88%,transparent) 56%,color-mix(in srgb,var(--bg) 62%,transparent) 68%,color-mix(in srgb,var(--bg) 30%,transparent) 84%,transparent 100%);}
+  .shot.is-intro .stagewrap::before{opacity:1;}
+  .shot:not(.is-pinned) .stagewrap::before{display:none;}
   .stage .poster,.stage canvas,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block;}
   .stage .poster{z-index:1;transition:opacity .35s var(--ease);} .stage .poster img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .2s;}
   .stage video{z-index:3;opacity:0;transition:opacity .35s var(--ease);}
@@ -83,11 +88,16 @@
   .shot.is-pinned:not(.is-intro) .claim::before{opacity:0;}
   .shot.is-pinned:not(.is-intro) .claim{grid-template-rows:0fr;opacity:0;pointer-events:none;}
   .claim h1{margin:0 auto;max-width:12ch;}
+  /* the outro: as the film dissolves out (--fo -> 0) the next headline dissolves in, centred, so there is no empty ground to scroll through */
+  .outro{position:absolute;inset:0;z-index:3;display:grid;place-items:center;text-align:center;padding:0 var(--gut);pointer-events:none;opacity:calc(1 - var(--fo,1));transform:translateY(calc(var(--fo,1) * 28px));}
+  .outro h2{margin:0 auto;max-width:14ch;} .outro .sub{margin:18px auto 0;text-align:center;}
+  .shot:not(.is-pinned) .outro{display:none;}
+  .proof.is-pinned .head,.proof.is-pinned>.psticky>.sub{display:none;}   /* pinned: the outro already said it */
   .claim .sub{margin:22px auto 0;text-align:center;}
   .claim .cta{margin:26px 0 8px;}
   .rise{overflow:hidden;padding-bottom:.12em;margin-bottom:-.12em;} .rise>*{transform:translateY(105%);opacity:0;transition:transform .7s var(--ease),opacity .5s var(--ease);}
   .ready .rise>*{transform:none;opacity:1;} .ready .rise:nth-child(2)>*{transition-delay:.08s;} .ready .rise:nth-child(3)>*{transition-delay:.16s;}
-  .lines{position:absolute;left:0;right:0;bottom:7svh;z-index:2;height:84px;margin:0 auto;width:min(900px,94vw);transition:opacity .3s;}
+  .lines{position:absolute;left:0;right:0;bottom:7svh;z-index:2;height:84px;margin:0 auto;width:min(900px,94vw);transition:opacity .3s;opacity:calc(var(--fo,1) * var(--fo,1) * var(--fo,1));}   /* the captions leave ahead of the film so they never sit on the outro headline */
   .line{position:absolute;left:0;right:0;top:0;width:100%;font-size:clamp(22px,2.6vw,38px);letter-spacing:-.02em;line-height:1.1;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;padding:0 8px;text-shadow:0 1px 18px var(--bg),0 0 40px var(--bg);}
   .line i{font-style:normal;font-family:var(--mono);font-size:13px;letter-spacing:.04em;color:var(--acc);display:block;margin-bottom:8px;}
   .line b{font-family:var(--mono);font-weight:500;letter-spacing:0;}
@@ -101,14 +111,14 @@
   /* scroll reveals for everything after the film: masks lift the headlines, blocks rise, stats count, stills settle */
   .reveal{opacity:0;transform:translateY(28px);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0) * 90ms);}
   .reveal.in{opacity:1;transform:none;}
-  .mask{overflow:hidden;padding-bottom:.24em;margin-bottom:-.24em;}
+  .mask{overflow:hidden;padding-bottom:.32em;margin-bottom:-.32em;}   /* room for the descenders (the g in "footage") */
   .mask>*{display:block;transform:translateY(115%);transition:transform 1s var(--ease);transition-delay:calc(var(--i,0) * 90ms);}
   .mask.in>*{transform:none;}
   .mask h2{width:100%;}
 
   /* proof: one phone that scrubs capture -> track -> read as you scroll */
   .proof{text-align:center;}
-  .proof.is-pinned{height:280vh;}
+  .proof.is-pinned{height:280vh;margin-top:-20svh;}   /* tucks up under the film's outro headline (the film is fully dissolved by then), so the headline and the phone are not a viewport apart */
   .psticky{display:flex;flex-direction:column;align-items:center;padding:96px var(--gut) 28px;}
   .proof.is-pinned .psticky{position:sticky;top:0;height:100vh;height:100svh;padding-top:84px;overflow:hidden;}
   .proof .sub{margin:16px auto 0;}
@@ -117,7 +127,7 @@
     box-shadow:inset 0 0 0 1.5px rgba(255,235,215,.55),inset 0 0 0 5px #d8691e,inset 0 0 0 6.5px rgba(20,8,0,.45),0 50px 90px -34px rgba(0,0,0,.6),0 12px 28px -14px rgba(0,0,0,.35);}
   .proof:not(.is-pinned) .iphone{--ph:min(70svh,640px);}
   .iphone .screen{position:absolute;inset:calc(var(--ph) * .018) calc(var(--ph) * .0175);background:#000;border-radius:14%/6.7%;overflow:hidden;}
-  .iphone .screen>*{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 50%;display:block;background:#000;}
+  .iphone .screen>*{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block;background:#000;}   /* the bake is at the screen's own aspect: edge to edge, no bars */
   .iphone .screen video{z-index:3;opacity:0;transition:opacity .35s;} .iphone .screen canvas{z-index:4;opacity:0;transition:opacity .3s;} .iphone .screen img{z-index:1;transition:opacity .35s;}
   .iphone.mode-video .screen video{opacity:1;} .iphone.mode-video .screen img,.iphone.mode-scrub .screen img{opacity:0;} .iphone.mode-scrub .screen canvas{opacity:1;}
   .iphone .island{position:absolute;top:calc(var(--ph) * .027);left:50%;width:calc(var(--ph) * .112);height:calc(var(--ph) * .031);transform:translateX(-50%);background:#000;border-radius:999px;z-index:5;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
@@ -128,16 +138,45 @@
   .iphone .loading{bottom:calc(var(--ph) * -.04);}
   .plines{position:relative;height:62px;width:min(700px,94vw);margin-top:18px;}
   .plines .line{font-size:clamp(20px,2vw,28px);text-shadow:none;}
-  .stats{display:flex;justify-content:center;gap:clamp(24px,5vw,72px);padding:0 var(--gut) clamp(96px,12vw,160px);flex-wrap:wrap;}
-  .stat b{display:block;font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;font-size:clamp(28px,3.4vw,48px);letter-spacing:-.02em;line-height:1;}
-  .stat span{display:block;font-size:14px;color:var(--body);margin-top:8px;}
+  /* how it reads a shot: four steps on one drawn line */
+  .how{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,48px);max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,56px) var(--gut) clamp(56px,6vw,84px);}
+  .how .track{position:absolute;left:var(--gut);right:var(--gut);top:calc(clamp(24px,4vw,56px) + 11px);height:1px;background:var(--rule);transform:scaleX(0);transform-origin:left;transition:transform 1.6s var(--ease) .2s;}
+  .how.in .track{transform:scaleX(1);}
+  .step{position:relative;padding-top:34px;text-align:left;}
+  .step::before{content:"";position:absolute;left:0;top:7px;width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--bg);transform:scale(0);transition:transform .6s var(--ease);transition-delay:calc(var(--i,0) * 220ms + .5s);}
+  .how.in .step::before{transform:scale(1);}
+  .step i{font-style:normal;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--acc);display:block;margin-left:22px;margin-top:-30px;margin-bottom:22px;}
+  .step b{display:block;font-weight:500;font-size:clamp(20px,1.8vw,26px);letter-spacing:-.02em;margin-bottom:8px;}
+  .step span{display:block;font-size:15px;line-height:1.4;color:var(--body);max-width:30ch;}
+  @media (max-width:760px){.how{grid-template-columns:1fr;gap:28px;} .how .track{display:none;} .step{padding-top:0;} .step::before{display:none;} .step i{margin:0 0 6px;}}
+
+  /* proof, live: once the scrub starts the headline folds away, the phone grows and two telemetry columns fade in beside it */
+  .proof .head{display:grid;grid-template-rows:1fr;width:100%;transition:grid-template-rows .7s var(--ease),opacity .4s var(--ease);} .proof .head>div{overflow:hidden;}
+  .proof.is-live .head{grid-template-rows:0fr;opacity:0;pointer-events:none;}
+  .stagegrid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(20px,3.5vw,64px);width:100%;max-width:1400px;}
+  .proof:not(.is-pinned) .stagegrid{display:block;}
+  .side{opacity:0;transition:opacity .6s var(--ease);font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(11px,.9vw,14px);line-height:1.4;text-align:left;display:grid;gap:clamp(10px,1.6vh,18px);}
+  .side.l{justify-self:end;text-align:right;} .side.r{justify-self:start;}
+  .proof:not(.is-pinned) .side{display:none;}
+  .side .row{opacity:0;transform:translateX(-14px);transition:opacity .6s var(--ease),transform .7s var(--ease);transition-delay:calc(var(--i,0) * 70ms + 150ms);color:var(--body);white-space:nowrap;}
+  .side.l .row{transform:translateX(14px);}
+  .side .row small{display:block;font-size:.78em;letter-spacing:.1em;text-transform:uppercase;opacity:.75;}
+  .side .row b{display:block;font-weight:500;color:var(--ink);font-size:clamp(20px,2.1vw,34px);letter-spacing:-.02em;line-height:1.1;margin-top:3px;transition:opacity .4s,color .4s;}
+  .side .row.dim b{opacity:.22;} .side .row.hot b,.side .row.hot small{color:var(--acc);opacity:1;}
+  .proof.is-near .side{opacity:1;} .proof.is-near .side .row{opacity:1;transform:none;}
+  .iphone.reveal{transition:opacity .9s var(--ease),transform .9s var(--ease),height .8s var(--ease);}
+  .proof.is-live .iphone{--ph:clamp(360px,calc(100svh - 236px),900px);}
+  .proof.is-live .sub{opacity:.75;}
+
+  /* the contrast band: a solid block with hard edges (Ian preferred it to the gradient version) */
+  .band.dark.early{padding:clamp(110px,11vw,150px) var(--gut) clamp(100px,10vw,140px);}
 
   /* stills band */
-  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 var(--gut) clamp(96px,12vw,160px);max-width:1440px;margin:0 auto;}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 var(--gut) clamp(40px,4vw,56px);max-width:1440px;margin:0 auto;}
   @media (max-width:760px){.tiles{grid-template-columns:1fr;}}
   .tile{background:var(--tile);border-radius:clamp(22px,3vw,38px);overflow:hidden;aspect-ratio:8/5;position:relative;}
-  .tile img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.12);transition:transform 1.6s var(--ease);}
-  .tile.in img{transform:scale(1.02);}
+  .tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.12);transition:transform 1.6s var(--ease);}
+  .tile.in img,.tile.in video{transform:scale(1.02);}
   .tile span{position:absolute;left:22px;bottom:18px;font-size:15px;letter-spacing:-.01em;}
 
   /* early access */
@@ -147,14 +186,14 @@
   .band.dark .pill{background:var(--cink);color:var(--cbg);} .band.dark .pill:hover{background:var(--cacc);color:var(--cbg);}
 
   /* footer */
-  footer{position:relative;overflow:hidden;padding:clamp(56px,8vw,110px) var(--gut) 28px;}
+  footer{position:relative;overflow:hidden;padding:clamp(32px,4vw,56px) var(--gut) 28px;}
   footer .ghost{font-size:clamp(72px,17vw,280px);letter-spacing:-.045em;line-height:.85;color:var(--ghost);user-select:none;text-align:center;transition:color .35s,opacity 1.2s var(--ease),transform 1.2s var(--ease),letter-spacing 1.2s var(--ease);}
   footer .ghost:not(.in){opacity:0;transform:translateY(14%);letter-spacing:.02em;}
   footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--body);margin-top:clamp(24px,4vw,48px);}
 
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
-    .rise>*,.reveal,.mask>*,footer .ghost:not(.in){transform:none;opacity:1;letter-spacing:inherit;} .hint{display:none;} .tile img{transform:scale(1.02);}
+    .rise>*,.reveal,.mask>*,footer .ghost:not(.in){transform:none;opacity:1;letter-spacing:inherit;} .hint{display:none;} .tile img,.tile video{transform:scale(1.02);}
   }
 </style></head>
 <body>
@@ -177,13 +216,14 @@
 
       <div class="stagewrap">
         <div class="stage" id="stage" role="img" aria-label="A phone clamped to a golf cart records a golf swing; the tracked ball flies a measured arc and lands inside the calculated miss; the cart drives to the spot while the phone scans for the ball and finds it.">
-          <div class="poster"><img src="v3/assets/how/light/poster.webp?v=10" width="1280" height="800" alt="" decoding="async"></div>
+          <div class="poster"><img src="assets/how3/light/poster.webp?v=10" width="1280" height="800" alt="" decoding="async"></div>
           <video class="film" muted playsinline loop preload="none" aria-hidden="true" disablepictureinpicture></video>
           <canvas class="scrub" aria-hidden="true"></canvas>
           <div class="loading" aria-hidden="true"></div>
         </div>
       </div>
 
+      <div class="outro" aria-hidden="true"><div><h2>Real footage. Real numbers.</h2><p class="sub">Shot on an iPhone. No markers, no sensors.</p></div></div>
       <div class="lines" role="list" aria-label="How it works">
         <div class="hint" id="hint" aria-hidden="true">Scroll</div>
         <button class="line is-active" role="listitem" data-t0="0" aria-current="step"><i>01</i>Clip it to the cart.</button>
@@ -197,18 +237,34 @@
 
   <section id="proof" class="band proof" aria-labelledby="proof-h">
     <div class="psticky">
-      <div class="mask" data-reveal><h2 id="proof-h">Real footage. Real numbers.</h2></div>
+      <div class="head"><div><div class="mask" data-reveal><h2 id="proof-h">Real footage. Real numbers.</h2></div></div></div>
       <p class="sub reveal" data-reveal style="--i:1">Shot on an iPhone. No markers, no sensors.</p>
+      <div class="stagegrid">
+      <div class="side l" aria-hidden="true">
+        <span class="row" style="--i:0"><small>Capture</small><b>120 fps &middot; 4K</b></span>
+        <span class="row" style="--i:1"><small>Frame</small><b id="tl-frame">0000</b></span>
+        <span class="row" style="--i:2"><small>Clock</small><b id="tl-time">0.00 s</b></span>
+        <span class="row dim" style="--i:3" id="tl-body"><small>Body</small><b>17 points</b></span>
+        <span class="row dim" style="--i:4" id="tl-impact"><small>Impact</small><b>6.53 s</b></span>
+      </div>
       <div class="iphone reveal" data-reveal style="--i:2" id="iphone" role="img" aria-label="An iPhone recording a real golf swing: the body is tracked, the strike is detected, then ball speed, launch, carry and apex appear.">
         <div class="screen">
-          <img src="assets/app/poster.webp?v=1" width="540" height="960" alt="" decoding="async">
-          <video muted playsinline loop preload="none" aria-hidden="true" disablepictureinpicture poster="assets/app/poster.webp?v=1"><source src="app_screen.mp4" type="video/mp4"></video>
+          <img src="assets/app2/poster.webp?v=2" width="640" height="1394" alt="" decoding="async">
+          <video muted playsinline loop preload="none" aria-hidden="true" disablepictureinpicture poster="assets/app2/poster.webp?v=2"><source src="app_screen2.mp4" type="video/mp4"></video>
           <canvas aria-hidden="true"></canvas>
         </div>
         <div class="island" aria-hidden="true"></div>
         <span class="k l act" aria-hidden="true"></span><span class="k l vu" aria-hidden="true"></span><span class="k l vd" aria-hidden="true"></span>
         <span class="k r pw" aria-hidden="true"></span><span class="k r cc" aria-hidden="true"></span>
         <div class="loading" aria-hidden="true"></div>
+      </div>
+      <div class="side r" aria-hidden="true">
+        <span class="row dim" style="--i:0" id="n-speed"><small>Ball speed</small><b data-v="110" data-u=" mph">&mdash; mph</b></span>
+        <span class="row dim" style="--i:1" id="n-launch"><small>Launch</small><b data-v="17.5" data-u="&deg;" data-d="1">&mdash;&deg;</b></span>
+        <span class="row dim" style="--i:2" id="n-carry"><small>Carry</small><b data-v="156" data-u=" yd">&mdash; yd</b></span>
+        <span class="row dim" style="--i:3" id="n-apex"><small>Apex</small><b data-v="86" data-u=" ft">&mdash; ft</b></span>
+        <span class="row dim" style="--i:4" id="n-club"><small>Club</small><b>7-iron</b></span>
+      </div>
       </div>
       <div class="plines" role="list" aria-label="Capture to read">
         <button class="line is-active" role="listitem" data-i0="0" aria-current="step"><i>01</i>Capture.</button>
@@ -218,19 +274,21 @@
     </div>
   </section>
 
-  <section class="band" aria-label="What it measures">
-    <div class="stats" id="stats" data-reveal>
-      <div class="stat reveal" style="--i:0"><b data-n="17">0</b><span>body points</span></div>
-      <div class="stat reveal" style="--i:1"><b data-n="120" data-unit=" fps">0 fps</b><span>every swing</span></div>
-      <div class="stat reveal" style="--i:2"><b data-n="0" data-from="12">12</b><span>sensors</span></div>
+  <section class="band" aria-label="How it reads a shot">
+    <div class="how" id="how" data-reveal>
+      <div class="track" aria-hidden="true"></div>
+      <div class="step reveal" style="--i:0"><i>01</i><b>Capture</b><span>120 fps, 4K, face-on from the cart. The phone never leaves the mount.</span></div>
+      <div class="step reveal" style="--i:1"><i>02</i><b>Track</b><span>17 body points and the club, every frame, so impact is found to the millisecond.</span></div>
+      <div class="step reveal" style="--i:2"><i>03</i><b>Trace</b><span>The ball leaves as a blur streak. The tracker follows the streak, not a dot.</span></div>
+      <div class="step reveal" style="--i:3"><i>04</i><b>Fit</b><span>A flight model turns that streak into speed, launch, carry and apex, then where it stopped.</span></div>
     </div>
   </section>
 
   <section class="band" aria-label="Moments">
     <div class="tiles">
-      <div class="tile reveal" data-reveal style="--i:0"><img src="v3/assets/how/light/still_0.webp?v=10" data-still="0" alt="" loading="lazy"><span>Roof mount.</span></div>
-      <div class="tile reveal" data-reveal style="--i:1"><img src="v3/assets/how/light/still_3.webp?v=10" data-still="3" alt="" loading="lazy"><span>Every carry.</span></div>
-      <div class="tile reveal" data-reveal style="--i:2"><img src="v3/assets/how/light/still_5.webp?v=10" data-still="5" alt="" loading="lazy"><span>Ball found.</span></div>
+      <div class="tile reveal" data-reveal style="--i:0"><video muted playsinline loop preload="none" poster="assets/how3/light/still_0.webp?v=10" data-still="0" data-t0="0.4" data-t1="3.6" aria-hidden="true" disablepictureinpicture></video><span>Roof mount.</span></div>
+      <div class="tile reveal" data-reveal style="--i:1"><video muted playsinline loop preload="none" poster="assets/how3/light/still_3.webp?v=10" data-still="3" data-t0="8.8" data-t1="12.6" aria-hidden="true" disablepictureinpicture></video><span>Every carry.</span></div>
+      <div class="tile reveal" data-reveal style="--i:2"><video muted playsinline loop preload="none" poster="assets/how3/light/still_5.webp?v=10" data-still="5" data-t0="18.6" data-t1="21.3" aria-hidden="true" disablepictureinpicture></video><span>Ball found.</span></div>
     </div>
   </section>
 
@@ -249,9 +307,9 @@
 <script>
 (function(){
   'use strict';
-  var FILM={S:22.4,FRAMES:672,SEQ_N:336,STEP:2,QMAX:320,SKIP:[[192,205],[224,231],[242,249],[269,276]],V:'?v=10'};   // one object: bump together when the film changes
-  var APP={SEQ_N:165,STEP:2,V:'?v=1'};                                                                          // the app-screen bake, frames 0-329 every 2nd
-  var ROOT_BASE='v3/assets/how/', FPS=30;
+  var FILM={S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=14'};   // one object: bump together when the film changes
+  var APP={SEQ_N:165,STEP:2,V:'?v=2'};                                                                          // the app-screen bake, frames 0-329 every 2nd
+  var ROOT_BASE='assets/how3/', FPS=30;
   var SCRUB=[]; for(var q=0;q<=FILM.QMAX;q++){ var skip=false; for(var s=0;s<FILM.SKIP.length;s++){ if(q>=FILM.SKIP[s][0]&&q<=FILM.SKIP[s][1]) skip=true; } if(!skip) SCRUB.push(q); }
   var APPLIST=[]; for(var a=0;a<APP.SEQ_N;a++) APPLIST.push(a);
   var rmq=matchMedia('(prefers-reduced-motion: reduce)');
@@ -274,19 +332,19 @@
     function fit(){ if(o.canvas.width!==o.W||o.canvas.height!==o.H){ o.canvas.width=o.W; o.canvas.height=o.H; shownKey=''; } }
     function ok(im){ return im&&im.complete&&im.naturalWidth; }
     function near(i){ if(ok(fr[i])) return fr[i]; for(var d=1;d<o.n;d++){ if(ok(fr[i-d])) return fr[i-d]; if(ok(fr[i+d])) return fr[i+d]; } return null; }
-    function drawAt(x){ var i0=Math.floor(x), t=x-i0, i1=Math.min(i0+1,o.list.length-1); var A=near(o.list[i0]), B=(t>0.04&&i1!==i0)?near(o.list[i1]):null; if(!A) return; fit();
-      if(B===A) B=null; var k=i0+':'+(B?Math.round(t*12):0); if(k===shownKey) return; shownKey=k;
-      ctx.clearRect(0,0,o.W,o.H); ctx.drawImage(A,0,0,o.W,o.H); if(B){ ctx.globalAlpha=t; ctx.drawImage(B,0,0,o.W,o.H); ctx.globalAlpha=1; } }
-    function load(){ wanted=true; if(loading||loadedN>=o.n) return; loading=true; o.stage.classList.add('is-loading'); var inflight=0, MAXC=6, gen=fr, k=0, order=[];
-      var c=o.list[Math.round(Math.max(0,Math.min(o.list.length-1,cur)))];          // load outward from where the reader is, so a theme switch or a fast scroll shows the right frame first
-      for(var d=0;d<o.n;d++){ if(c+d<o.n) order.push(c+d); if(d>0&&c-d>=0) order.push(c-d); }
+    function drawAt(x){ var i=Math.round(x), key=o.list[i], A=near(key); if(!A) return; fit();
+      if(key===shownKey) return; shownKey=key;          // nearest frame only: cross-blending two alpha frames made moving parts translucent and soft between frames (the flicker)
+      ctx.clearRect(0,0,o.W,o.H); ctx.drawImage(A,0,0,o.W,o.H); }
+    function load(){ var NL=o.list.length; wanted=true; if(loading||loadedN>=NL) return; loading=true; o.stage.classList.add('is-loading'); var inflight=0, MAXC=6, gen=fr, k=0, order=[];
+      var ci=Math.round(Math.max(0,Math.min(NL-1,cur)));          // load outward from where the reader is, only frames the scrub can show, so a theme switch or a fast scroll shows the right frame first
+      for(var d=0;d<NL;d++){ if(ci+d<NL) order.push(o.list[ci+d]); if(d>0&&ci-d>=0) order.push(o.list[ci-d]); }
       function pump(){ while(inflight<MAXC&&k<order.length){ (function(j){ var im=new Image(); im.decoding='async'; inflight++;
-          im.onload=im.onerror=function(){ inflight--; if(gen!==fr) return; loadedN++; if(bar) bar.style.setProperty('--p',(loadedN/o.n).toFixed(3)); if(loadedN>=o.n){ o.stage.classList.remove('is-loading'); loading=false; }
-            if(Math.abs(j-o.list[Math.round(Math.max(0,Math.min(o.list.length-1,cur)))])<3){ shownKey=''; tick(); } pump(); };
+          im.onload=im.onerror=function(){ inflight--; if(gen!==fr) return; loadedN++; if(bar) bar.style.setProperty('--p',(loadedN/NL).toFixed(3)); if(loadedN>=NL){ o.stage.classList.remove('is-loading'); loading=false; }
+            if(Math.abs(j-o.list[Math.round(Math.max(0,Math.min(NL-1,cur)))])<3){ shownKey=''; tick(); } pump(); };
           im.src=o.url(j); gen[j]=im; })(order[k++]); } }
       pump(); }
     function tick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(step); }
-    function step(){ var d=target-cur; if(Math.abs(d)<.01){ cur=target; } else { cur+=(Math.abs(d)>20)?d*.5:d*.18; raf=requestAnimationFrame(step); }
+    function step(){ var d=target-cur; if(Math.abs(d)<.01){ cur=target; } else { cur+=(Math.abs(d)>40)?d*.5:d*.22; raf=requestAnimationFrame(step); }
       var x=Math.max(0,Math.min(o.list.length-1,cur)); drawAt(x); o.onIndex(o.list[Math.round(x)]); }
     function play(){ var p=o.video.play(); if(p&&p.catch) p.catch(function(){}); }
     function loadVideo(){ o.video.src=o.vidUrl(); o.video.load(); usedFb=false;
@@ -311,8 +369,8 @@
     if(idx!==activeIdx){ activeIdx=idx; lines.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); });
       if(rmq.matches) setStill([0,2,3,4,5][idx]); } }
   function tier(){ return (innerWidth<900)?'small_2x':'large_2x'; }
-  var film=makeScrub({ sec:shot, sticky:sticky, stage:stage, canvas:stage.querySelector('canvas.scrub'), video:stage.querySelector('video.film'), W:960, H:600, n:FILM.SEQ_N, list:SCRUB,
-    url:function(j){ return BASE()+'seq2/s_'+pad(j,3)+'.webp'+FILM.V; }, vidUrl:function(){ return BASE()+tier()+(isSafari()?'.mov':'.webm')+FILM.V; }, fbUrl:function(){ return BASE()+'fallback_'+key()+'.mp4'+FILM.V; },
+  var film=makeScrub({ sec:shot, sticky:sticky, stage:stage, canvas:stage.querySelector('canvas.scrub'), video:stage.querySelector('video.film'), W:1920, H:1200, n:FILM.SEQ_N, list:SCRUB,
+    url:function(j){ return BASE()+'seq1/s_'+pad(j,3)+'.webp'+FILM.V; }, vidUrl:function(){ return BASE()+tier()+(isSafari()?'.mov':'.webm')+FILM.V; }, fbUrl:function(){ return BASE()+'fallback_'+(isDark()?'dark':'cream')+'.mp4'+FILM.V; },
     onIndex:function(i){ setTime(i*FILM.STEP/FPS); } });
   var clockRaf=0;
   function clock(){ if(film.mode()==='video'&&!film.video.paused){ setTime(film.video.currentTime%FILM.S); } clockRaf=requestAnimationFrame(clock); }
@@ -323,12 +381,25 @@
 
   /* ---- the phone ---- */
   var proof=document.getElementById('proof'), psticky=proof.querySelector('.psticky'), iphone=document.getElementById('iphone'), plines=Array.prototype.slice.call(proof.querySelectorAll('.plines .line'));
-  if(PIN) proof.classList.add('is-pinned');
+  if(PIN){ proof.classList.add('is-pinned'); proof.classList.add('is-live'); iphone.classList.add('in'); }   /* pinned: always the full layout (big phone + telemetry), and the phone is visible the moment it rises into view - no reveal gate, no lone small phone in the hand-off from the film */
   var pActive=-1;
   function setPhase(i){ var idx=0; for(var k=0;k<plines.length;k++){ if(i>=parseInt(plines[k].dataset.i0,10)) idx=k; }
-    if(idx!==pActive){ pActive=idx; plines.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); }); } }
-  var app=makeScrub({ sec:proof, sticky:psticky, stage:iphone, canvas:iphone.querySelector('canvas'), video:iphone.querySelector('video'), W:540, H:960, n:APP.SEQ_N, list:APPLIST,
-    url:function(j){ return 'assets/app/seq/a_'+pad(j,3)+'.webp'+APP.V; }, vidUrl:function(){ return 'app_screen.mp4'; }, fbUrl:null, onIndex:function(i){ setPhase(i); } });
+    if(idx!==pActive){ pActive=idx; plines.forEach(function(c,k){ c.classList.toggle('is-active',k===idx); if(k===idx) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); }); }
+    telemetry(i); }
+  /* telemetry beside the phone (pinned only): a frame clock on the left, the numbers on the right, driven by the scrub index */
+  var tlFrame=document.getElementById('tl-frame'), tlTime=document.getElementById('tl-time'), tlBody=document.getElementById('tl-body'), tlImpact=document.getElementById('tl-impact');
+  var nums=Array.prototype.slice.call(document.querySelectorAll('.side.r .row')), numsOn=null;
+  function fmt(v,d){ return d?v.toFixed(d):String(Math.round(v)); }
+  function showNums(on){ if(on===numsOn) return; numsOn=on;
+    nums.forEach(function(r,k){ var b=r.querySelector('b'); r.classList.toggle('dim',!on); if(!b.dataset.v) return; var to=parseFloat(b.dataset.v), u=b.dataset.u||'', d=parseInt(b.dataset.d||'0',10);
+      if(!on){ b.textContent='—'+u; return; } if(rmq.matches){ b.textContent=fmt(to,d)+u; return; }
+      var t0=0, D=900+k*120; requestAnimationFrame(function fr(ts){ if(!t0) t0=ts; var x=Math.min(1,(ts-t0)/D); x=1-Math.pow(1-x,3); b.textContent=fmt(to*x,d)+u; if(x<1&&numsOn) requestAnimationFrame(fr); }); }); }
+  function telemetry(i){ if(!tlFrame) return; var f=i*APP.STEP, t=f/FPS;
+    tlFrame.textContent=pad(f,4); tlTime.textContent=t.toFixed(2)+' s';
+    tlBody.classList.toggle('dim',t<1.4); tlImpact.classList.toggle('dim',t<6.53); tlImpact.classList.toggle('hot',t>=6.53&&t<7.6);
+    showNums(i>=100); }
+  var app=makeScrub({ sec:proof, sticky:psticky, stage:iphone, canvas:iphone.querySelector('canvas'), video:iphone.querySelector('video'), W:640, H:1394, n:APP.SEQ_N, list:APPLIST,
+    url:function(j){ return 'assets/app2/seq/a_'+pad(j,3)+'.webp'+APP.V; }, vidUrl:function(){ return 'app_screen2.mp4'; }, fbUrl:null, onIndex:function(i){ setPhase(i); } });
   var appClock=0;
   function appTick(){ if(app.mode()==='video'&&!app.video.paused){ setPhase(Math.round(app.video.currentTime*FPS/APP.STEP)); } appClock=requestAnimationFrame(appTick); }
   plines.forEach(function(c){ c.addEventListener('click',function(){ var k=plines.indexOf(c), nx=parseInt(plines[(k+1)%plines.length].dataset.i0,10);
@@ -336,12 +407,20 @@
     else if(app.video.src&&!rmq.matches){ app.video.currentTime=nx*APP.STEP/FPS; } }); });
 
   /* everything that carries a theme-specific asset re-points when the theme changes */
-  var tileImgs=Array.prototype.slice.call(document.querySelectorAll('.tile img[data-still]'));
+  /* the three tiles loop a short passage of the film (the theme's alpha cut) over the tile ground */
+  var tiles=Array.prototype.slice.call(document.querySelectorAll('.tile video[data-still]'));
+  function tileSrc(){ return BASE()+'small_2x'+(isSafari()?'.mov':'.webm')+FILM.V; }
+  function tilePlay(v){ var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
+  tiles.forEach(function(v){ var t0=parseFloat(v.dataset.t0), t1=parseFloat(v.dataset.t1);
+    v.addEventListener('loadedmetadata',function(){ try{ v.currentTime=t0; }catch(e){} });
+    v.addEventListener('timeupdate',function(){ if(v.currentTime>=t1||v.currentTime<t0-0.4){ v.currentTime=t0; } }); });
+  function tileTheme(){ tiles.forEach(function(v){ v.poster=BASE()+'still_'+v.dataset.still+'.webp'+FILM.V; if(v.getAttribute('src')){ var was=!v.paused; v.src=tileSrc(); v.load(); if(was) tilePlay(v); } }); }
+  if(!rmq.matches&&'IntersectionObserver' in window){ var tileIO=new IntersectionObserver(function(es){es.forEach(function(e){ var v=e.target; if(e.isIntersecting){ if(!v.getAttribute('src')){ v.src=tileSrc(); v.load(); } tilePlay(v); } else { v.pause(); } });},{rootMargin:'15% 0px'}); tiles.forEach(function(v){ tileIO.observe(v); }); }
   function applyTheme(first){
     var dark=isDark();
     themeBtn.setAttribute('aria-label','Switch to '+(dark?'light':'dark')+' mode');
-    themeMeta.setAttribute('content',dark?'#0B0817':'#EFEAF8');
-    tileImgs.forEach(function(im){ im.src=BASE()+'still_'+im.dataset.still+'.webp'+FILM.V; });
+    themeMeta.setAttribute('content',dark?'#0B0817':'#F6F1E6');
+    tileTheme();
     if(first) return;
     pimg.src=stillSrc(stillIdx);
     film.retheme(); navTone();
@@ -358,10 +437,12 @@
     navTone();
     if(!PIN) return;
     var p=film.progress();
-    if(p<0){ film.setMode('video'); }
+    if(p<0){ film.setMode('video'); shot.style.setProperty('--fo','1'); }
     else { shot.classList.toggle('is-intro',p<=0.002); if(p>0.002) hint.classList.add('is-gone');
-      if(p<=0.002){ film.setMode('video'); } else { film.setMode('scrub'); film.setTarget(p); } }
+      if(p<=0.002){ film.setMode('video'); } else { film.setMode('scrub'); film.setTarget(Math.min(1,p/0.92)); }   /* the film plays over the first 92% of the pin */
+      var fo=p>0.86?Math.max(0,1-(p-0.86)/0.08):1; shot.style.setProperty('--fo',fo.toFixed(3)); }   /* ...dissolves into the page ground over 0.86-0.94, and the outro holds centred for the last 6% while the phone section tucks in below it */
     var pp=app.progress();
+    proof.classList.toggle('is-near',proof.getBoundingClientRect().top<innerHeight*0.98);   /* the telemetry columns slide in as the section's top enters the viewport */
     if(pp<0){ app.setMode('still'); } else if(pp<=0.001){ app.setMode('still'); app.setTarget(0); } else { app.setMode('scrub'); app.setTarget(pp); }
   }
 
