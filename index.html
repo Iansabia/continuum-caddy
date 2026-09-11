@@ -138,17 +138,58 @@
   .iphone .loading{bottom:calc(var(--ph) * -.04);}
   .plines{position:relative;height:62px;width:min(700px,94vw);margin-top:18px;}
   .plines .line{font-size:clamp(20px,2vw,28px);text-shadow:none;}
-  /* how it reads a shot: four steps on one drawn line */
-  .how{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,48px);max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,56px) var(--gut) clamp(56px,6vw,84px);}
-  .how .track{position:absolute;left:var(--gut);right:var(--gut);top:calc(clamp(24px,4vw,56px) + 11px);height:1px;background:var(--rule);transform:scaleX(0);transform-origin:left;transition:transform 1.6s var(--ease) .2s;}
-  .how.in .track{transform:scaleX(1);}
-  .step{position:relative;padding-top:34px;text-align:left;}
-  .step::before{content:"";position:absolute;left:0;top:7px;width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--bg);transform:scale(0);transition:transform .6s var(--ease);transition-delay:calc(var(--i,0) * 220ms + .5s);}
-  .how.in .step::before{transform:scale(1);}
-  .step i{font-style:normal;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--acc);display:block;margin-left:22px;margin-top:-30px;margin-bottom:22px;}
-  .step b{display:block;font-weight:500;font-size:clamp(20px,1.8vw,26px);letter-spacing:-.02em;margin-bottom:8px;}
-  .step span{display:block;font-size:15px;line-height:1.4;color:var(--body);max-width:30ch;}
-  @media (max-width:760px){.how{grid-template-columns:1fr;gap:28px;} .how .track{display:none;} .step{padding-top:0;} .step::before{display:none;} .step i{margin:0 0 6px;}}
+  /* ---- how it reads a shot ----
+     The four passes are not four features: they are four moments of the SAME 10.9 s swing. So the section is built
+     as an instrument reading that shot back. A playhead crosses the rule and arrives at each station exactly when
+     the clock reaches that station's real timecode (which is why it sprints, dwells through the swing, then sprints
+     again), and every readout sits at an em dash until the playhead gets there and then acquires. Desktop takes the
+     whole sweep in at a glance, so it runs once on entry; a phone cannot, so there the reader's scroll is the
+     playhead - see the media query further down. */
+  .how{max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,56px) var(--gut) clamp(56px,6vw,84px);}
+  .howhead{display:flex;align-items:baseline;justify-content:space-between;gap:20px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--body);margin-bottom:clamp(16px,2.2vw,26px);}
+  .howhead .hc{display:flex;align-items:baseline;gap:10px;}
+  .howhead .hc b{font-weight:500;font-size:15px;letter-spacing:.01em;text-transform:none;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .how .track{position:relative;height:11px;margin-bottom:clamp(18px,2.2vw,28px);}
+  .how .track::before{content:"";position:absolute;left:0;right:0;top:5px;height:1px;background:var(--rule);}
+  .how .track .fill{position:absolute;left:0;top:5px;height:1px;width:0;background:var(--acc);opacity:.6;}
+  .how .track .st{position:absolute;top:1px;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1px var(--rule);transform:scale(.72);transition:transform .45s var(--ease),background .45s,box-shadow .45s;}
+  .how .track .st.on{background:var(--acc);box-shadow:inset 0 0 0 1px var(--acc);transform:scale(1);}
+  .how .track .play{position:absolute;top:0;left:0;width:11px;height:11px;margin-left:-5.5px;border-radius:50%;background:var(--acc);opacity:0;transition:opacity .3s;box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 20%,transparent);}
+  .how.is-running .track .play{opacity:1;}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,48px);}
+  .step{position:relative;display:flex;flex-direction:column;opacity:.32;transform:translateY(8px);transition:opacity .55s var(--ease),transform .55s var(--ease);}
+  .step.is-on{opacity:1;transform:none;}
+  .shead{display:flex;align-items:baseline;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--body);margin-bottom:10px;}
+  .shead i{font-style:normal;color:var(--acc);}
+  .shead em{font-style:normal;font-variant-numeric:tabular-nums;transition:color .4s;}
+  .step.is-hot .shead em{color:var(--acc);}
+  /* the figure: what that pass actually produces, drawn rather than rendered - a filmstrip, the 17 tracked points,
+     the blur streak the ball really leaves, and the curve fitted to it. Every drawn element carries pathLength="100"
+     so one dash rule draws them all on, whatever their true length. */
+  .fig{display:block;width:100%;height:auto;margin-bottom:14px;color:var(--rule);transition:color .5s var(--ease);}
+  .step.is-on .fig{color:var(--body);}
+  .step.is-hot .fig{color:var(--acc);}
+  .fig .dr{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset 1s var(--ease);transition-delay:calc(var(--d,0) * 70ms);}
+  .step.is-on .fig .dr{stroke-dashoffset:0;}
+  .fig .club{stroke-width:1.9;}
+  .fig .pt{fill:currentColor;stroke:none;transform-box:fill-box;transform-origin:50% 50%;transform:scale(0);transition:transform .38s var(--ease);transition-delay:calc(.42s + var(--d,0) * 34ms);}
+  .step.is-on .fig .pt{transform:scale(1);}
+  .fig .scan{fill:none;stroke:currentColor;stroke-width:1.4;opacity:0;}
+  .step.is-on .fig .scan{animation:scanx 1.6s var(--ease) .25s 1 both;}
+  @keyframes scanx{0%{opacity:0;transform:translateX(0)}14%{opacity:.85}100%{opacity:0;transform:translateX(98px)}}
+  .step>b{display:block;font-weight:500;font-size:clamp(20px,1.8vw,26px);letter-spacing:-.02em;margin-bottom:8px;}
+  .step>span{display:block;font-size:15px;line-height:1.4;color:var(--body);max-width:30ch;margin-bottom:16px;}
+  .rd{display:grid;gap:7px;margin-top:auto;border-top:1px solid var(--rule);padding-top:11px;font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  .rd .r{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+  .rd small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--body);opacity:.8;}
+  .rd b{font-weight:500;font-size:16px;letter-spacing:-.01em;color:var(--ink);opacity:.28;transition:opacity .45s,color .45s;}
+  .step.is-on .rd b{opacity:1;}
+  .step.is-hot .rd b{color:var(--acc);}
+  @media (prefers-reduced-motion: reduce){
+    .fig .dr{transition:none;stroke-dashoffset:0;}
+    .fig .pt{transition:none;transform:scale(1);}
+    .fig .scan{display:none;}
+  }
 
   /* proof, live: once the scrub starts the headline folds away, the phone grows and two telemetry columns fade in beside it */
   .proof .head{display:grid;grid-template-rows:1fr;width:100%;transition:grid-template-rows .7s var(--ease),opacity .4s var(--ease);} .proof .head>div{overflow:hidden;}
@@ -208,6 +249,42 @@
   footer .ghost:not(.in){opacity:0;transform:translateY(14%);letter-spacing:.02em;}
   footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--body);margin-top:clamp(24px,4vw,48px);}
 
+  /* small laptops and tablets: four columns get too narrow for a 30ch sentence plus a two-up readout, so the
+     stations go two-up and the rule steps aside - the sequence still reads, it just stops pretending to be a ruler. */
+  @media (min-width:761px) and (max-width:1000px){
+    .how .track{display:none;}
+    .howhead{margin-bottom:8px;}
+    .steps{grid-template-columns:repeat(2,1fr);gap:clamp(26px,4vw,40px) clamp(24px,4vw,44px);}
+    .fig{max-width:420px;}
+  }
+  /* the how section on a phone: a phone cannot hold the sweep in one view, so the rule turns on its side and the
+     reader's own scroll becomes the playhead - each station lights as it reaches the lower third and acquires its
+     numbers there. Two columns (a mono rail of timecodes running down a spine, against a full-width body) so it
+     reads as a record sheet rather than the left-aligned list it used to collapse into. */
+  @media (max-width:760px){
+    .how{padding-bottom:clamp(40px,8vw,60px);}
+    .howhead{margin-bottom:4px;}
+    .how .track{display:none;}
+    .steps{display:block;}
+    .step{display:grid;grid-template-columns:54px 1fr;column-gap:18px;padding:24px 0 26px;transform:translateY(14px);}
+    .step+.step{border-top:1px solid var(--rule);}
+    .step::before{content:"";position:absolute;left:63px;top:0;bottom:0;width:1px;background:var(--rule);}
+    .step:first-child::before{top:30px;}
+    .step:last-child::before{bottom:26px;}
+    .step::after{content:"";position:absolute;left:59px;top:26px;width:9px;height:9px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1px var(--rule);transform:scale(.72);transition:transform .45s var(--ease),background .45s,box-shadow .45s;}
+    .step.is-on::after{background:var(--acc);box-shadow:inset 0 0 0 1px var(--acc);transform:scale(1);}
+    .shead{grid-column:1;grid-row:1;flex-direction:column;align-items:flex-end;gap:3px;text-align:right;margin:0;font-size:11px;}
+    .fig,.step>b,.step>span,.rd{grid-column:2;}
+    .fig{margin-bottom:12px;}
+    .fig .dr,.fig .scan{stroke-width:.8;}                       /* the figure runs ~2.6x its viewBox here: thin the stroke and the joints back down */
+    .step.is-on .fig .pt{transform:scale(.6);}
+    .step>b{font-size:23px;}
+    .step>span{max-width:none;margin-bottom:14px;}
+    .rd{grid-template-columns:1fr 1fr;gap:10px 18px;padding-top:12px;}
+    .rd .r{display:block;}
+    .rd small{margin-bottom:3px;}
+    .rd b{font-size:21px;}
+  }
   /* ---- phones and small tablets: the same pinned scroll-scrub, laid out for a portrait screen ----
      The landscape cut is 1.6:1 and cropping it to a portrait viewport would show only its middle third, so phones load
      a separate 9:16 render of the same film (assets/how4) and the layout otherwise matches the desktop one. */
@@ -323,12 +400,62 @@
   </section>
 
   <section class="band" aria-label="How it reads a shot">
-    <div class="how" id="how" data-reveal>
-      <div class="track" aria-hidden="true"></div>
-      <div class="step reveal" style="--i:0"><i>01</i><b>Capture</b><span>120 fps, 4K, face-on from the cart. The phone never leaves the mount.</span></div>
-      <div class="step reveal" style="--i:1"><i>02</i><b>Track</b><span>17 body points and the club, every frame, so impact is found to the millisecond.</span></div>
-      <div class="step reveal" style="--i:2"><i>03</i><b>Trace</b><span>The ball leaves as a blur streak. The tracker follows the streak, not a dot.</span></div>
-      <div class="step reveal" style="--i:3"><i>04</i><b>Fit</b><span>A flight model turns that streak into speed, launch, carry and apex, then where it stopped.</span></div>
+    <div class="how" id="how">
+      <div class="howhead"><span class="hl">One shot, four passes</span><span class="hc"><small>Clock</small><b id="how-clock">0.00 s</b></span></div>
+      <div class="track" aria-hidden="true"><span class="fill"></span><span class="st" style="left:0%"></span><span class="st" style="left:33.333%"></span><span class="st" style="left:66.667%"></span><span class="st" style="left:100%"></span><span class="play"></span></div>
+      <div class="steps">
+
+        <div class="step">
+          <div class="shead"><i>01</i><em>0.00 s</em></div>
+          <svg class="fig" viewBox="0 0 120 52" aria-hidden="true">
+            <rect class="dr" style="--d:0" x="2" y="7" width="116" height="38" rx="3" pathLength="100"/>
+            <line class="dr" style="--d:1" x1="19" y1="11" x2="19" y2="41" pathLength="100"/><line class="dr" style="--d:2" x1="36" y1="11" x2="36" y2="41" pathLength="100"/><line class="dr" style="--d:3" x1="53" y1="11" x2="53" y2="41" pathLength="100"/><line class="dr" style="--d:4" x1="70" y1="11" x2="70" y2="41" pathLength="100"/><line class="dr" style="--d:5" x1="87" y1="11" x2="87" y2="41" pathLength="100"/><line class="dr" style="--d:6" x1="104" y1="11" x2="104" y2="41" pathLength="100"/>
+            <line class="scan" x1="11" y1="9" x2="11" y2="43"/>
+            <circle class="pt" style="--d:0" cx="9" cy="13" r="2.1"/></svg>
+          <b>Capture</b>
+          <span>120 fps, 4K, face-on from the cart. The phone never leaves the mount.</span>
+          <div class="rd"><div class="r"><small>Rate</small><b data-v="120" data-u=" fps">&mdash;</b></div><div class="r"><small>Frames</small><b data-v="1308">&mdash;</b></div></div>
+        </div>
+
+        <div class="step">
+          <div class="shead"><i>02</i><em>1.40 s</em></div>
+          <svg class="fig" viewBox="0 0 120 52" aria-hidden="true">
+            <circle class="dr" style="--d:1" cx="42" cy="10" r="5.2" pathLength="100"/>
+            <path class="dr" style="--d:0" d="M34 21 H52" pathLength="100"/><path class="dr" style="--d:0" d="M43 21 V34" pathLength="100"/><path class="dr" style="--d:1" d="M37 34 H49" pathLength="100"/>
+            <path class="dr" style="--d:2" d="M34 21 L52 16 L62 11" pathLength="100"/><path class="dr" style="--d:2" d="M52 21 L63 21 L68 15" pathLength="100"/><path class="dr" style="--d:3" d="M62 11 L68 15" pathLength="100"/>
+            <path class="dr" style="--d:4" d="M37 34 L33 42 L32 48 L27 50" pathLength="100"/><path class="dr" style="--d:4" d="M49 34 L53 42 L55 48 L60 50" pathLength="100"/>
+            <path class="dr club" style="--d:5" d="M66 12 L94 2" pathLength="100"/>
+            <circle class="pt" style="--d:0" cx="42" cy="4.9" r="1.8"/><circle class="pt" style="--d:1" cx="34" cy="21" r="1.8"/><circle class="pt" style="--d:2" cx="52" cy="21" r="1.8"/><circle class="pt" style="--d:3" cx="43" cy="27" r="1.8"/><circle class="pt" style="--d:4" cx="52" cy="16" r="1.8"/><circle class="pt" style="--d:5" cx="63" cy="21" r="1.8"/><circle class="pt" style="--d:6" cx="62" cy="11" r="1.8"/><circle class="pt" style="--d:7" cx="68" cy="15" r="1.8"/><circle class="pt" style="--d:8" cx="65" cy="12" r="1.8"/><circle class="pt" style="--d:9" cx="37" cy="34" r="1.8"/><circle class="pt" style="--d:10" cx="49" cy="34" r="1.8"/><circle class="pt" style="--d:11" cx="33" cy="42" r="1.8"/><circle class="pt" style="--d:12" cx="53" cy="42" r="1.8"/><circle class="pt" style="--d:13" cx="32" cy="48" r="1.8"/><circle class="pt" style="--d:14" cx="55" cy="48" r="1.8"/><circle class="pt" style="--d:15" cx="27" cy="50" r="1.8"/><circle class="pt" style="--d:16" cx="60" cy="50" r="1.8"/></svg>
+          <b>Track</b>
+          <span>17 body points and the club, every frame, so impact lands to the millisecond.</span>
+          <div class="rd"><div class="r"><small>Points</small><b data-v="17">&mdash;</b></div><div class="r"><small>Impact</small><b data-v="6.53" data-d="2" data-u=" s">&mdash;</b></div></div>
+        </div>
+
+        <div class="step">
+          <div class="shead"><i>03</i><em>8.60 s</em></div>
+          <svg class="fig" viewBox="0 0 120 52" aria-hidden="true">
+            <path class="dr" style="--d:0" d="M4 48 H34" pathLength="100"/><path class="dr" style="--d:0" d="M12 48 V43" pathLength="100"/>
+            <path class="dr" style="--d:2" d="M16 43 L112 14" pathLength="100"/>
+            <ellipse class="pt" style="--d:0" cx="34" cy="37" rx="4.4" ry="1.5" transform="rotate(-17 34 37)"/><ellipse class="pt" style="--d:2" cx="55" cy="31" rx="5.6" ry="1.5" transform="rotate(-17 55 31)"/><ellipse class="pt" style="--d:4" cx="77" cy="24" rx="6.6" ry="1.5" transform="rotate(-17 77 24)"/><ellipse class="pt" style="--d:6" cx="100" cy="17" rx="7.4" ry="1.5" transform="rotate(-17 100 17)"/></svg>
+          <b>Trace</b>
+          <span>The ball leaves as a blur streak, not a dot. The tracker follows the streak.</span>
+          <div class="rd"><div class="r"><small>Ball frames</small><b data-v="25">&mdash;</b></div><div class="r"><small>Depart</small><b data-v="8.60" data-d="2" data-u=" s">&mdash;</b></div></div>
+        </div>
+
+        <div class="step">
+          <div class="shead"><i>04</i><em>9.80 s</em></div>
+          <svg class="fig" viewBox="0 0 120 52" aria-hidden="true">
+            <path class="dr" style="--d:0" d="M4 48 H116" pathLength="100"/>
+            <path class="dr" style="--d:1" d="M8 47 Q 56 -2 104 44" pathLength="100"/>
+            <path class="dr" style="--d:4" d="M56 12 V22" pathLength="100"/>
+            <ellipse class="dr" style="--d:5" cx="104" cy="45" rx="13" ry="4.2" pathLength="100"/>
+            <circle class="pt" style="--d:0" cx="8" cy="47" r="1.9"/><circle class="pt" style="--d:4" cx="56" cy="12" r="1.9"/><circle class="pt" style="--d:8" cx="104" cy="45" r="2.2"/></svg>
+          <b>Fit</b>
+          <span>A flight model turns that streak into speed, launch, carry and apex &mdash; then where it stopped.</span>
+          <div class="rd"><div class="r"><small>Carry</small><b data-v="156" data-u=" yd">&mdash;</b></div><div class="r"><small>Launch</small><b data-v="17.5" data-d="1" data-u="&deg;">&mdash;</b></div></div>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -547,6 +674,55 @@
   if(rmq.matches||!('IntersectionObserver' in window)){ revealEls.forEach(revealIn); }
   else { var ro=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ revealIn(e.target); ro.unobserve(e.target); } });},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
     revealEls.forEach(function(el){ ro.observe(el); }); }
+
+  /* ---- how it reads a shot: the four steps driven as one shot's clock ----
+     hPos() is the whole idea: the stations sit at even thirds of the rule, but the playhead's position is a
+     piecewise-linear function of the SHOT clock through those anchors, so it reaches each station exactly when the
+     clock reads that station's timecode. Desktop runs it once on entry; a phone is far too tall to take that in, so
+     there each station is lit by the reader's own scroll instead (hMobile). */
+  var how=document.getElementById('how');
+  if(how){
+    var hSteps=Array.prototype.slice.call(how.querySelectorAll('.step'));
+    var hClock=document.getElementById('how-clock'), hPlay=how.querySelector('.track .play'), hFill=how.querySelector('.track .fill');
+    var hDots=Array.prototype.slice.call(how.querySelectorAll('.track .st'));
+    var HT=[0,1.40,8.60,9.80], HX=[0,33.333,66.667,100], HEND=10.90;
+    var HOWMOB=!matchMedia('(min-width: 761px)').matches;   /* this section's own breakpoint, not the page's 901px one */
+    function hPos(t){ if(t<=HT[0]) return HX[0];
+      for(var k=1;k<HT.length;k++){ if(t<=HT[k]) return HX[k-1]+(HX[k]-HX[k-1])*(t-HT[k-1])/(HT[k]-HT[k-1]); }
+      return HX[HX.length-1]; }
+    function hAcquire(st){ if(st.dataset.got) return; st.dataset.got='1';
+      Array.prototype.forEach.call(st.querySelectorAll('.rd b'),function(b,k){
+        var to=parseFloat(b.dataset.v), u=b.dataset.u||'', d=parseInt(b.dataset.d||'0',10);
+        if(rmq.matches){ b.textContent=fmt(to,d)+u; return; }
+        var t0=0, D=720+k*160;
+        requestAnimationFrame(function fr(ts){ if(!t0) t0=ts; var x=Math.min(1,(ts-t0)/D); x=1-Math.pow(1-x,3);
+          b.textContent=fmt(to*x,d)+u; if(x<1) requestAnimationFrame(fr); }); }); }
+    function hAt(t){
+      hClock.textContent=t.toFixed(2)+' s';
+      if(hPlay){ var x=hPos(t); hPlay.style.left=x+'%'; hFill.style.width=x+'%'; }
+      for(var k=0;k<hSteps.length;k++){
+        var on=t>=HT[k]-1e-6, hot=on&&(k+1<HT.length?t<HT[k+1]:t<HEND);
+        hSteps[k].classList.toggle('is-on',on); hSteps[k].classList.toggle('is-hot',hot);
+        if(hDots[k]) hDots[k].classList.toggle('on',on);
+        if(on) hAcquire(hSteps[k]); } }
+    function hRun(){ if(how.dataset.ran) return; how.dataset.ran='1';
+      how.classList.add('is-running');
+      var t0=0, WALL=4200, LAST=HT[HT.length-1];   /* 0 -> 9.80 s of shot clock across the rule, then a 900 ms tail while Fit's numbers land */
+      requestAnimationFrame(function fr(ts){ if(!t0) t0=ts; var el=ts-t0, t;
+        t = el<WALL ? LAST*el/WALL : Math.min(HEND, LAST+(HEND-LAST)*(el-WALL)/900);
+        hAt(t);
+        if(t<HEND) requestAnimationFrame(fr); else how.classList.remove('is-running'); }); }
+    function hMobile(){ var seen=-1;
+      var hio=new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting) return;
+        var k=hSteps.indexOf(e.target); hio.unobserve(e.target); if(k<=seen) return; seen=k;
+        for(var j=0;j<=seen;j++){ hSteps[j].classList.add('is-on'); hSteps[j].classList.toggle('is-hot',j===seen); hAcquire(hSteps[j]); }
+        hClock.textContent=(seen===hSteps.length-1?HEND:HT[seen]).toFixed(2)+' s'; });},{threshold:0,rootMargin:'0px 0px -34% 0px'});
+      hSteps.forEach(function(s){ hio.observe(s); }); }
+    if(rmq.matches||!('IntersectionObserver' in window)){ hAt(HEND); }
+    else if(HOWMOB){ hMobile(); }
+    else { var hStart=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ hStart.disconnect(); hRun(); } });},{threshold:.25});
+      hStart.observe(how); }
+  }
 
   /* ---- early access: the CTA opens a status panel; set WAITLIST to a form endpoint to turn on the email capture ---- */
   var WAITLIST='';   /* e.g. 'https://formspree.io/f/xxxxxxx' - until then the panel states the beta is not open and no email is collected */
