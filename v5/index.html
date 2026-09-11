@@ -209,20 +209,19 @@
   footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--body);margin-top:clamp(24px,4vw,48px);}
 
   /* ---- phones and small tablets: the same pinned scroll-scrub, laid out for a portrait screen ----
-     The film is 1.6:1. Cropped to cover a portrait viewport it would show only its middle third, so on a narrow
-     screen it stays a full-width landscape band, vertically centred, with the headline above and the caption below. */
+     The landscape cut is 1.6:1 and cropping it to a portrait viewport would show only its middle third, so phones load
+     a separate 9:16 render of the same film (assets/how4) and the layout otherwise matches the desktop one. */
   @media (max-width:900px){
     .nav::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(100% + 30px);z-index:-1;pointer-events:none;background:linear-gradient(to bottom,var(--bg) 62%,transparent);transition:background .35s;}   /* narrow columns run under the fixed nav; a scrim of the current ground keeps the wordmark legible */
     .nav.on-dark::before{background:linear-gradient(to bottom,var(--cbg) 62%,transparent);}
     .shot.is-pinned{height:380vh;}
-    .shot.is-pinned .sticky{justify-content:center;padding:72px var(--gut) 18px;}
-    .shot.is-pinned .stagewrap{position:relative;inset:auto;flex:0 0 auto;width:100vw;margin-left:calc(50% - 50vw);aspect-ratio:4/3;}   /* 4:3 rather than the film's 8:5: it fills a portrait screen properly and only trims 8% off each side, well clear of the action */
-    .shot.is-pinned .stage,.shot.is-pinned.is-intro .stage{--fs:1;--fy:0%;}   /* no overscan: the render's own feathered top and bottom edges stay in frame, so the band melts into the ground instead of ending on a hard line */
-    .shot.is-pinned .stagewrap::before,.shot.is-pinned .claim::before{display:none;}   /* both exist to blend a full-bleed film into the ground; the band has its own edges */
-    .shot.is-pinned .claim{margin-bottom:20px;}
-    .shot.is-pinned:not(.is-intro) .claim{margin-bottom:0;}
-    .shot.is-pinned .lines{position:relative;left:auto;right:auto;bottom:auto;height:88px;margin-top:18px;}
-    .shot.is-pinned .line{text-shadow:none;}
+    /* phones load the 9:16 cut of the film, so the stage is full-bleed exactly as it is on a laptop. `contain`, not
+       `cover`: the frames are baked over the page's own ground, so the letterbox bands are that same colour - nothing
+       is cropped and there is no visible edge or box. */
+    .shot.is-pinned .stage .poster,.shot.is-pinned .stage canvas,.shot.is-pinned .stage video,.shot.is-pinned .stage .poster img{object-fit:contain;}
+    .shot.is-pinned .stage,.shot.is-pinned.is-intro .stage{--fs:1;--fy:0%;}
+    .shot.is-pinned .claim::before{display:none;}
+    .shot.is-pinned .stagewrap::before{height:42%;}   /* the intro headline sits over the cart roof: keep a short veil of the ground beneath it */
     .proof.is-pinned{height:300vh;margin-top:-14svh;}
     .proof.is-pinned .psticky{justify-content:center;padding:72px var(--gut) 18px;}
     /* the phone sat at the start of a single 1fr column, i.e. hard against the left gutter. Below 900px the two
@@ -237,9 +236,7 @@
     .proof.is-live .iphone{--ph:clamp(260px,calc(100svh - 400px),520px);}
   }
   @media (max-width:900px) and (orientation:landscape){
-    .shot.is-pinned .sticky,.proof.is-pinned .psticky{padding-top:60px;}
-    .shot.is-pinned .lines{height:64px;margin-top:10px;}
-    .shot.is-pinned .claim{margin-bottom:10px;}
+    .proof.is-pinned .psticky{padding-top:60px;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -380,13 +377,14 @@
   /* one object per stage: the frame tier, its geometry and the scrub index maths. The mobile tier is every 2nd film frame at
      960x600 (4.2 MB a theme instead of 20), which is still 2x a phone's CSS pixels and a third of the bytes. */
   var FILM=MOB
-    ? {S:22.4,FRAMES:672,SEQ_N:336,STEP:2,QMAX:320,SKIP:[[192,205],[224,231],[242,249],[269,276]],V:'?v=14',DIR:'seq1m/',W:960,H:600}
+    ? {S:22.4,FRAMES:672,SEQ_N:336,STEP:2,QMAX:320,SKIP:[[192,205],[224,231],[242,249],[269,276]],V:'?v=15',DIR:'seqm/',W:720,H:1280}
     : {S:22.4,FRAMES:672,SEQ_N:672,STEP:1,QMAX:640,SKIP:[[384,411],[448,463],[484,499],[538,553]],V:'?v=14',DIR:'seq1/',W:1920,H:1200};
   var APP=MOB
     ? {SEQ_N:110,STEP:3,V:'?v=2',DIR:'../assets/app2m/seq/',W:400,H:871}
     : {SEQ_N:165,STEP:2,V:'?v=2',DIR:'../assets/app2/seq/',W:640,H:1394};
   function ai(v){ return Math.round(v*2/APP.STEP); }   // the phone's phase marks are written as step-2 indices; rescale them to whatever tier is loaded
-  var ROOT_BASE='../assets/how3/', FPS=30;
+  var ROOT_BASE='../assets/how3/', FPS=30;                       // the landscape cut: the loop videos, the fallbacks and the three tiles
+  var FILM_BASE=MOB?'../assets/how4/':'../assets/how3/';            // the scrub tier and its stills: phones get the 9:16 portrait cut of the same film
   var SCRUB=[]; for(var q=0;q<=FILM.QMAX;q++){ var skip=false; for(var s=0;s<FILM.SKIP.length;s++){ if(q>=FILM.SKIP[s][0]&&q<=FILM.SKIP[s][1]) skip=true; } if(!skip) SCRUB.push(q); }
   var APPLIST=[]; for(var a=0;a<APP.SEQ_N;a++) APPLIST.push(a);
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ document.body.classList.add('ready'); }); });
@@ -396,6 +394,7 @@
   function isDark(){ var t=root.getAttribute('data-theme'); return t?(t==='dark'):mqd.matches; }
   function key(){ return isDark()?'dark':'light'; }
   function BASE(){ return ROOT_BASE+(isDark()?'':'light/'); }
+  function FBASE(){ return FILM_BASE+(isDark()?'':'light/'); }
   function pad(n,w){ n=String(n); while(n.length<w) n='0'+n; return n; }
   function isSafari(){var u=navigator.userAgent;return /Safari/.test(u)&&!/Chrome|Chromium|Edg|OPR|Android/.test(u);}
   if(MOB) document.documentElement.classList.add('mob');
@@ -437,7 +436,8 @@
   var lines=Array.prototype.slice.call(shot.querySelectorAll('.lines .line')), hint=document.getElementById('hint');
   if(PIN) shot.classList.add('is-pinned');
   var pimg=stage.querySelector('.poster img'), stillIdx=-1;
-  function stillSrc(i){ return BASE()+(i<0?'poster':'still_'+i)+'.webp'+FILM.V; }
+  function stillSrc(i){ return FBASE()+(i<0?'poster':'still_'+i)+'.webp'+FILM.V; }
+  if(MOB){ pimg.width=FILM.W; pimg.height=FILM.H; pimg.src=stillSrc(-1); }   /* the poster in the markup is the landscape cut, and applyTheme skips the first call */
   function setStill(i){ if(stillIdx===i) return; stillIdx=i; var u=stillSrc(i); pimg.style.opacity=0; setTimeout(function(){ pimg.src=u; pimg.style.opacity=1; },200); }
   var activeIdx=-1;
   function setTime(t){ var idx=0; for(var i=0;i<lines.length;i++){ if(t>=parseFloat(lines[i].dataset.t0)) idx=i; }
@@ -445,7 +445,7 @@
       if(rmq.matches) setStill([0,2,3,4,5][idx]); } }
   function tier(){ return (innerWidth<900)?'small_2x':'large_2x'; }
   var film=makeScrub({ sec:shot, sticky:sticky, stage:stage, canvas:stage.querySelector('canvas.scrub'), video:stage.querySelector('video.film'), W:FILM.W, H:FILM.H, n:FILM.SEQ_N, list:SCRUB,
-    url:function(j){ return BASE()+FILM.DIR+'s_'+pad(j,3)+'.webp'+FILM.V; }, vidUrl:function(){ return BASE()+tier()+(isSafari()?'.mov':'.webm')+FILM.V; }, fbUrl:function(){ return BASE()+'fallback_'+(isDark()?'dark':'cream')+'.mp4'+FILM.V; },
+    url:function(j){ return FBASE()+FILM.DIR+'s_'+pad(j,3)+'.webp'+FILM.V; }, vidUrl:function(){ return BASE()+tier()+(isSafari()?'.mov':'.webm')+'?v=14'; }, fbUrl:function(){ return BASE()+'fallback_'+(isDark()?'dark':'cream')+'.mp4?v=14'; },
     onIndex:function(i){ setTime(i*FILM.STEP/FPS); } });
   var clockRaf=0;
   function clock(){ if(film.mode()==='video'&&!film.video.paused){ setTime(film.video.currentTime%FILM.S); } clockRaf=requestAnimationFrame(clock); }
@@ -512,9 +512,9 @@
     navTone();
     if(!PIN) return;
     var p=film.progress();
-    if(p<0){ film.setMode('video'); shot.style.setProperty('--fo','1'); }
+    if(p<0){ film.setMode(MOB?'still':'video'); shot.style.setProperty('--fo','1'); }   /* the loop videos are the landscape cut, so a phone holds the portrait poster instead and starts scrubbing on the first scroll */
     else { shot.classList.toggle('is-intro',p<=0.002); if(p>0.002) hint.classList.add('is-gone');
-      if(p<=0.002){ film.setMode('video'); } else { film.setMode('scrub'); film.setTarget(Math.min(1,p/0.92)); }   /* the film plays over the first 92% of the pin */
+      if(p<=0.002){ film.setMode(MOB?'still':'video'); } else { film.setMode('scrub'); film.setTarget(Math.min(1,p/0.92)); }   /* the film plays over the first 92% of the pin */
       var fo=p>0.86?Math.max(0,1-(p-0.86)/0.08):1; shot.style.setProperty('--fo',fo.toFixed(3)); }   /* ...dissolves into the page ground over 0.86-0.94, and the outro holds centred for the last 6% while the phone section tucks in below it */
     var pp=app.progress();
     proof.classList.toggle('is-near',proof.getBoundingClientRect().top<innerHeight*0.98);   /* the telemetry columns slide in as the section's top enters the viewport */
@@ -523,8 +523,10 @@
 
   if(rmq.matches){ film.setMode('still'); app.setMode('still'); }
   else {
-    var wantVideo=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ film.ensureVideo(); if(!PIN){ film.setMode('video'); } else if(film.mode()!=='scrub'){ film.setMode('video'); } } else { film.video.pause(); } });},{rootMargin:'120% 0px'});
-    wantVideo.observe(stage);
+    if(!MOB){   /* the loop video is the landscape cut: never fetch it on a phone, which scrubs the portrait frames instead */
+      var wantVideo=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ film.ensureVideo(); if(!PIN){ film.setMode('video'); } else if(film.mode()!=='scrub'){ film.setMode('video'); } } else { film.video.pause(); } });},{rootMargin:'120% 0px'});
+      wantVideo.observe(stage);
+    }
     if(!PIN){ var wantApp=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ app.setMode('video'); } else { app.video.pause(); } });},{rootMargin:'40% 0px'}); wantApp.observe(iphone); }
   }
   if(PIN){
